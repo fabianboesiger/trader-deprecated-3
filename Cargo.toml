@@ -1,0 +1,12 @@
+[package]
+name = "trader-test"
+version = "0.1.0"
+authors = ["fabianboesiger <boesiger.fabian@outlook.com>"]
+edition = "2018"
+
+[dependencies]
+tokio = "0.2"
+futures = "0.3"
+rust_decimal = "1.7"
+num-traits = "0.2"
+openlimits = { git = "https://github.com/nash-io/openlimits" }
