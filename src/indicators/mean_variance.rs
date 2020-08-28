@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 
+#[derive(Clone)]
 pub struct MeanVariance {
     period: usize,
     buffer: VecDeque<f64>,
@@ -27,12 +28,11 @@ impl MeanVariance {
 
             let mean = sum / self.period as f64;
             let variance = sum_squared / self.period as f64 - mean.powi(2);
-            
+
             Some((mean, variance))
         } else {
             self.buffer.push_back(value);
             None
         }
-
     }
 }

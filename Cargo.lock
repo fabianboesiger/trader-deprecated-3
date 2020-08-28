@@ -1333,9 +1333,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "trader-test"
+name = "trader"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "futures",
  "num-traits",
  "openlimits",
