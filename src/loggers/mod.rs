@@ -1,5 +1,13 @@
-mod websocket;
+mod log;
+mod web;
 
-pub use websocket::Websocket;
+pub use log::Log;
+pub use web::Web;
 
-pub trait Logger {}
+use async_trait::async_trait;
+use tokio::sync::mpsc::UnboundedReceiver;
+
+#[async_trait]
+pub trait Logger: Send + Sync {
+    async fn run(self, receiver: UnboundedReceiver<Log>);
+}

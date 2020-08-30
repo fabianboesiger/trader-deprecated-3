@@ -1,7 +1,7 @@
 use crate::model::{Asset, Market, MAIN_ASSET};
 use crate::{loggers::Logger, managers::Manager, traders::Trader};
 use openlimits::binance::Binance;
-use tokio::sync::mpsc::channel;
+use tokio::sync::mpsc::unbounded_channel;
 use tokio::task;
 
 pub struct Environment<T: Trader, M: Manager, L: Logger> {
@@ -11,17 +11,18 @@ pub struct Environment<T: Trader, M: Manager, L: Logger> {
 }
 
 impl<T: Trader, M: Manager, L: Logger> Environment<T, M, L> {
-    pub async fn trade(&mut self) {
+    pub async fn trade(self) {
         let exchange: &'static Binance = Box::leak(Box::new(Binance::new(false)));
 
-        let (sender, reciever) = channel(16);
+        let (order_sender, order_reciever) = unbounded_channel();
+        let (message_sender, message_reciever) = unbounded_channel();
 
         for asset in Asset::all()
             .into_iter()
             .filter(|asset| *asset != MAIN_ASSET)
         {
-            let mut trader = self.trader.clone();
-            let sender = sender.clone();
+            let trader = self.trader.clone();
+            let sender = order_sender.clone();
             let market = Market {
                 base: asset,
                 quote: MAIN_ASSET,
@@ -32,6 +33,9 @@ impl<T: Trader, M: Manager, L: Logger> Environment<T, M, L> {
             });
         }
 
-        self.manager.run(exchange, reciever).await;
+        tokio::join! {
+            self.manager.run(exchange, order_reciever, message_sender),
+            self.logger.run(message_reciever)
+        };
     }
 }

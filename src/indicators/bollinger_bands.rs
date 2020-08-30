@@ -16,12 +16,12 @@ impl BollingerBands {
         }
     }
 
-    pub fn update(&mut self, value: &Candlestick) -> Option<(f64, f64)> {
+    pub fn compute(&mut self, value: &Candlestick, recover: bool) -> Option<(f64, f64)> {
         let typical_price = (value.high.to_f64().unwrap()
             + value.low.to_f64().unwrap()
             + value.close.to_f64().unwrap())
             / 3.0;
-        if let Some((mean, variance)) = self.mean_variance.update(typical_price) {
+        if let Some((mean, variance)) = self.mean_variance.compute(typical_price, recover) {
             let standard_derivation = variance.sqrt();
             let upper = mean + self.standard_derivations * standard_derivation;
             let lower = mean - self.standard_derivations * standard_derivation;

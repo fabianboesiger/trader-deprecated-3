@@ -2,7 +2,7 @@ pub const MAIN_ASSET: Asset = Asset::USDT;
 
 macro_rules! gen_assets {
     ($($asset:ident),* $(,)?) => {
-        #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
+        #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash, serde::Serialize)]
         pub enum Asset {
             $($asset),*
         }
@@ -12,7 +12,6 @@ macro_rules! gen_assets {
                 vec![$(Asset::$asset),*]
             }
         }
-
 
         impl std::fmt::Display for Asset {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

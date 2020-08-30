@@ -1,7 +1,8 @@
 use super::Asset;
+use serde::Serialize;
 use std::fmt;
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Serialize)]
 pub struct Market {
     pub base: Asset,
     pub quote: Asset,

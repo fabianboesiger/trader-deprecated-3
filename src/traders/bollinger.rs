@@ -14,7 +14,7 @@ use openlimits::binance::{
     },
     Binance,
 };
-use tokio::sync::mpsc::Sender;
+use tokio::sync::mpsc::UnboundedSender;
 
 #[derive(Copy, Clone)]
 enum Position {
@@ -40,7 +40,7 @@ impl Bollinger {
 }
 #[async_trait]
 impl Trader for Bollinger {
-    async fn run(&mut self, exchange: &Binance, market: Market, mut sender: Sender<Order>) {
+    async fn run(mut self, exchange: &Binance, market: Market, sender: UnboundedSender<Order>) {
         // Get historical data using REST API.
         let params = KlineParams {
             symbol: format!("{}{}", market.base, market.quote),
@@ -71,17 +71,19 @@ impl Trader for Bollinger {
         websocket.subscribe(sub).await.unwrap();
         let live_candlesticks = websocket.filter_map(|message| async move {
             if let BinanceWebsocketMessage::Candlestick(candlestick) = message.unwrap() {
-                if candlestick.kline.is_final_bar {
-                    return Some(Candlestick::from(candlestick.kline));
-                }
+                Some(Candlestick::from(candlestick.kline))
+            } else {
+                None
             }
-            None
         });
 
         // Chain and handle the candlesticks.
         let mut stream = historical_candlesticks.chain(live_candlesticks).boxed();
         while let Some(candlestick) = stream.next().await {
-            let side = if let Some((upper, lower)) = self.bollinger_bands.update(&candlestick) {
+            let side = if let Some((upper, lower)) = self
+                .bollinger_bands
+                .compute(&candlestick, !candlestick.last)
+            {
                 match self.position {
                     Position::Long => {
                         if candlestick.high.to_f64().unwrap() > upper {
@@ -103,17 +105,17 @@ impl Trader for Bollinger {
             } else {
                 None
             };
-
-            sender
-                .send(Order {
-                    value: Value {
-                        value: candlestick.close,
-                        market,
-                    },
-                    side,
-                })
-                .await
-                .unwrap();
+            //if candlestick.live {
+                sender
+                    .send(Order {
+                        value: Value {
+                            value: candlestick.close,
+                            market,
+                        },
+                        side,
+                    })
+                    .unwrap();
+            //}
         }
     }
 }

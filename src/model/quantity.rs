@@ -1,13 +1,14 @@
 use super::{Asset, Value};
 
 use rust_decimal::prelude::*;
+use serde::Serialize;
 use std::{
     cmp::Ordering,
     fmt,
     ops::{AddAssign, Div, Mul, Neg, SubAssign},
 };
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize)]
 pub struct Quantity {
     pub quantity: Decimal,
     pub asset: Asset,
