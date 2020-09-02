@@ -1,4 +1,5 @@
 use super::Value;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug)]
 pub enum Side {
@@ -10,4 +11,5 @@ pub enum Side {
 pub struct Order {
     pub side: Option<Side>,
     pub value: Value,
+    pub timestamp: DateTime<Utc>,
 }

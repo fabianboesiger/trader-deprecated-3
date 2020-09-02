@@ -10,7 +10,7 @@ impl Ema {
     }
 
     pub fn compute(&mut self, value: f64, recover: bool) -> Option<f64> {
-        if let Some(mut ema) = self.ema {
+        if let Some(mut ema) = self.ema.clone() {
             ema += self.alpha * (value - ema);
             if !recover {
                 self.ema = Some(ema);

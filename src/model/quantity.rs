@@ -14,6 +14,12 @@ pub struct Quantity {
     pub asset: Asset,
 }
 
+impl Quantity {
+    pub fn is_zero(&self) -> bool {
+        self.quantity.is_zero()
+    }
+}
+
 impl fmt::Display for Quantity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} {}", self.quantity, self.asset)

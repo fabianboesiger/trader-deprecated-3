@@ -6,8 +6,8 @@ use crate::{
 use async_trait::async_trait;
 use openlimits::binance::Binance;
 use rust_decimal::prelude::*;
-use std::{cmp::min, collections::HashMap, fmt};
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use std::{collections::HashMap, fmt};
+use tokio::sync::mpsc::{Receiver, Sender};
 
 pub struct Simulated {
     assets: HashMap<Asset, ValuedQuantity>,
@@ -67,50 +67,58 @@ impl Manager for Simulated {
     async fn run(
         mut self,
         _exchange: &Binance,
-        mut receiver: UnboundedReceiver<Order>,
-        sender: UnboundedSender<Log>,
+        mut receiver: Receiver<Order>,
+        mut sender: Sender<Log>,
     ) {
-        while let Some(Order { side, value }) = receiver.recv().await {
+        let mut _trade_count: u64 = 0;
+        while let Some(Order { side, value, timestamp }) = receiver.recv().await {
             assert_eq!(value.market.quote, MAIN_ASSET);
 
             let b = value.market.base;
             let q = value.market.quote;
 
-            //sender.send(Log::Value(value)).unwrap();
-
             self.assets.get_mut(&b).unwrap().value = value;
+
+            sender.send(Log::Value(value)).await.unwrap();
 
             let sum = self.total();
 
             if let Some(side) = side {
                 match side {
                     Side::Buy => {
+                        /*
                         let quantity = min(
                             self.assets.get(&q).unwrap().quantity,
                             sum / self.investment_fraction,
                         ) / value;
+                        */
+                        let quantity = sum / self.investment_fraction;
+                        if quantity <= self.assets.get(&q).unwrap().quantity {
+                            let buy = quantity / value * (Decimal::one() - self.fee);
+                            let sell = quantity;
 
-                        let buy = quantity * (Decimal::one() - self.fee);
-                        let sell = quantity * value;
+                            _trade_count += 1;
+                            sender.send(Log::Trade { buy, sell, timestamp }).await.unwrap();
 
-                        //sender.send(Log::Order { buy, sell }).unwrap();
-
-                        self.assets.get_mut(&b).unwrap().quantity += buy;
-                        self.assets.get_mut(&q).unwrap().quantity -= sell;
+                            self.assets.get_mut(&b).unwrap().quantity += buy;
+                            self.assets.get_mut(&q).unwrap().quantity -= sell;
+                        }
                     }
                     Side::Sell => {
                         let quantity = self.assets.get(&b).unwrap().quantity;
+                        if !quantity.is_zero() {
+                            let buy = quantity * value * (Decimal::one() - self.fee);
+                            let sell = quantity;
 
-                        let buy = quantity * value * (Decimal::one() - self.fee);
-                        let sell = quantity;
+                            _trade_count += 1;
+                            sender.send(Log::Trade { buy, sell, timestamp }).await.unwrap();
 
-                        //sender.send(Log::Order { buy, sell }).unwrap();
-
-                        self.assets.get_mut(&q).unwrap().quantity += buy;
-                        self.assets.get_mut(&b).unwrap().quantity -= sell;
+                            self.assets.get_mut(&q).unwrap().quantity += buy;
+                            self.assets.get_mut(&b).unwrap().quantity -= sell;
+                        } 
                     }
                 }
-                println!("{}", self);
+                //println!("{}TRADE COUNT: {}", self, trade_count);
             }
         }
     }

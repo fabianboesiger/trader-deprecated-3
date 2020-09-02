@@ -25,8 +25,9 @@ impl Rsi {
             let (up, down) = if current_close > previous_close {
                 (current_close - previous_close, 0.0)
             } else {
-                (previous_close - current_close, 0.0)
+                (0.0, previous_close - current_close)
             };
+
             if let (Some(up), Some(down)) = (
                 self.up_mma.compute(up, recover),
                 self.down_mma.compute(down, recover),

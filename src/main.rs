@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 mod environment;
 mod error;
 mod indicators;
@@ -11,12 +13,12 @@ use error::Error;
 use loggers::Web;
 use managers::Simulated;
 use model::Interval;
-use traders::Bollinger;
+use traders::Custom;
 
-#[tokio::main]
+#[tokio::main(core_threads = 1, max_threads = 1)]
 async fn main() -> Result<(), Error> {
     Environment {
-        trader: Bollinger::new(Interval::FivteenMinutes, 20, 2.0),
+        trader: Custom::new(Interval::FiveMinutes),
         manager: Simulated::new(10.0, 0.001),
         logger: Web::new(([127, 0, 0, 1], 8000)),
     }

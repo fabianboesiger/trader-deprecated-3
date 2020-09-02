@@ -7,22 +7,26 @@ CREATE TABLE trades (
     PRIMARY KEY (buy_asset, sell_asset, date_time)
 );
 
-SELECT asset, SUM(quantity)
-FROM
-(
+/* Get quantities of all assets.
+WITH
+moves AS (
     SELECT
         buy_asset AS asset,
         buy_quantity AS quantity,
         date_time
     FROM trades
-) AS buys
-UNION ALL
-(
-    SELECT
+	UNION ALL
+	SELECT
         sell_asset AS asset,
         -sell_quantity AS quantity,
         date_time
     FROM trades
-) AS sells
+	UNION ALL
+	SELECT 'USDT', 1000.0, NULL
+)
+SELECT asset, SUM(quantity) AS quantity
+FROM moves
 WHERE date_time <= NOW()
+OR date_time IS NULL
 GROUP BY asset
+*/

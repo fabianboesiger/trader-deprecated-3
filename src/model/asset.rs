@@ -20,6 +20,23 @@ macro_rules! gen_assets {
                 })
             }
         }
+
+        impl From<String> for Asset {
+            fn from(string: String) -> Asset {
+                match string.as_str() {
+                    $(stringify!($asset) => Asset::$asset),*,
+                    _ => panic!()
+                }
+            }
+        }
+
+        impl From<Asset> for String {
+            fn from(asset: Asset) -> String {
+                String::from(match asset {
+                    $(Asset::$asset => stringify!($asset)),*
+                })
+            }
+        }
     };
 }
 
@@ -42,4 +59,21 @@ gen_assets! {
     ATOM,
     BAND,
     TRX,
+    NEO,
+    TRB,
+    ONT,
+    CRV,
+    QTUM,
+    OMG,
+    XTZ,
+    ZEC,
+    VET,
+    WNXM,
+    STORJ,
+    BTT,
+    ALGO,
+    WAVES,
+    XLM,
+    BAT,
+    XMR
 }

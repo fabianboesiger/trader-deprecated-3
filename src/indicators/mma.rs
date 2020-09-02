@@ -2,13 +2,13 @@ use super::Ema;
 
 #[derive(Clone)]
 pub struct Mma {
-    ema: Ema,
+    ema: Ema
 }
 
 impl Mma {
     pub fn new(period: usize) -> Self {
         Mma {
-            ema: Ema::new(1.0 / period as f64),
+            ema: Ema::new(1.0 / period as f64)
         }
     }
 

@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+:root {
+    --solid-color: #111;
+    --light-color: #222;
+    --text-color: #ddd;
+}
+
+html {
+    background: var(--solid-color);
+    color: var(--text-color);
+    font-family: "Fira Code", monospace;
+    font-size: 16px;
+}
+
+body {
+    margin: 32px;
+}
+
+header, footer {
+    text-align: center;
+}
+
+main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: -16px;
+}
+
+section {
+    width: 768px;
+    align-self: start;
+    flex-grow: 1;
+    max-width: 100%;
+    margin: 16px;
+    padding: 16px;
+    background: var(--light-color);
+    border-radius: 16px;
+    box-shadow: 0 0 16px black;
+}
+
+canvas {
+    width: 100%;
+}
+
+.shrink {
+    text-align: center;
+}
+
+.shrink > * {
+    display: inline-block !important;
+    max-width: 384px;
+}
+
+a {
+    color: #06d;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+}
+
+table .asset, table .timestamp {
+    text-align: left;
+    width: 10%;
+}
+
+table .quantity, table .value, table .usdt, table .duration {
+    text-align: right;
+    width: 30%;
+}
+
+th {
+    background: var(--solid-color);
+}
+
+tr:not(:last-child) td {
+    border-bottom: 1px solid var(--solid-color);
+}
+
+@keyframes high {
+    from {color: #6d0;}
+    to {color: #ddd;}
+}
+
+.higher {
+    /*animation: high 1s;*/
+    color: #6d0;
+}
+
+@keyframes low {
+    from {color: #d06;}
+    to {color: #ddd;}
+}
+
+.lower {
+    /*animation: low 1s;*/
+    color: #d06;
+}
+
+.green {
+    color: #6d0;
+}
+
+.red {
+    color: #d06;
+}
+
+#summary > p {
+    text-align: center;
+    font-size: 20px;
+}
+
+.scrollable tbody {
+    display: block;
+    width: 100%;
+    max-height: 384px;
+    overflow-y: auto;
+}
+
+.scrollable thead {
+    display: block;
+    width: 100%;
+}
+
+.scrollable tr {
+    display: block;
+    width: 100%;
+    font-size: 0;
+}
+
+.scrollable th, .scrollable td {
+    box-sizing: border-box;
+    font-size: 16px;
+    display: inline-block;
+    width: 20%;
+}
+
+.scrollable th.timestamp, .scrollable td.timestamp {
+    width: 40%;
+}

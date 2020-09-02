@@ -9,6 +9,8 @@ pub enum Interval {
     FivteenMinutes,
     ThirtyMinutes,
     OneHour,
+    OneDay,
+    OneWeek,
 }
 
 impl fmt::Display for Interval {
@@ -23,6 +25,8 @@ impl fmt::Display for Interval {
                 Interval::FivteenMinutes => "15m",
                 Interval::ThirtyMinutes => "30m",
                 Interval::OneHour => "1h",
+                Interval::OneDay => "1d",
+                Interval::OneWeek => "1w",
             }
         )
     }
