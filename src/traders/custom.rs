@@ -121,7 +121,7 @@ impl Custom {
                 None
             };
             
-            //if candlestick.live {
+            if candlestick.live {
                 sender
                     .send(Order {
                         value: Value {
@@ -133,7 +133,7 @@ impl Custom {
                     })
                     .await
                     .unwrap();
-            //}
+            }
     
             
             if !candlestick.live {
