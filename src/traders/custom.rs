@@ -135,10 +135,11 @@ impl Custom {
                     .unwrap();
             }
     
-            
+            /*
             if !candlestick.live {
                 barrier.wait().await;
             }
+            */
         }
     }
     
