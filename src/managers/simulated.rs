@@ -73,6 +73,7 @@ impl Manager for Simulated {
         let mut _trade_count: u64 = 0;
         while let Some(Order { side, value, timestamp }) = receiver.recv().await {
             assert_eq!(value.market.quote, MAIN_ASSET);
+            println!("recieve order {}", value.market);
 
             let b = value.market.base;
             let q = value.market.quote;

@@ -1,4 +1,4 @@
-use openlimits::binance::model::{KlineSummary, websocket::CandelStickMessage};
+use openlimits::binance::model::{KlineSummary, websocket::CandlestickMessage};
 use rust_decimal::prelude::*;
 use chrono::{DateTime, Utc, TimeZone};
 
@@ -33,8 +33,8 @@ impl From<KlineSummary> for Candlestick {
     }
 }
 
-impl From<CandelStickMessage> for Candlestick {
-    fn from(candlestick: CandelStickMessage) -> Candlestick {
+impl From<CandlestickMessage> for Candlestick {
+    fn from(candlestick: CandlestickMessage) -> Candlestick {
         Candlestick {
             open_time: Utc.timestamp_millis(candlestick.kline.start_time),
             close_time: Utc.timestamp_millis(candlestick.kline.end_time),

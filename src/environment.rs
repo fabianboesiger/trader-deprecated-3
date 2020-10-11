@@ -13,7 +13,7 @@ pub struct Environment<T: Trader, M: Manager, L: Logger> {
 
 impl<T: Trader, M: Manager, L: Logger> Environment<T, M, L> {
     pub async fn trade(self) {
-        let exchange: &'static Binance = Box::leak(Box::new(Binance::new(false)));
+        let exchange: &'static Binance = Box::leak(Box::new(Binance::new(false).await));
 
         let (order_sender, order_reciever) = channel(1);
         let (message_sender, message_reciever) = channel(16);

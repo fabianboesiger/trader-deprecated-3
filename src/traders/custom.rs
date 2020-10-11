@@ -122,6 +122,8 @@ impl Custom {
             };
             
             if candlestick.live {
+                println!("send order {}", market);
+
                 sender
                     .send(Order {
                         value: Value {
@@ -192,6 +194,7 @@ impl Trader for Custom {
             });
 
             self.consume_candlesticks(live_candlesticks, exchange, market, barrier.clone(), &mut sender).await;
+            println!("attempting to reconnect {}", market);
         }
     }
 }
