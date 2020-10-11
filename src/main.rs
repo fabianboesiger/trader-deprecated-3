@@ -15,7 +15,8 @@ use managers::Simulated;
 use model::Interval;
 use traders::Custom;
 
-#[tokio::main(core_threads = 1, max_threads = 1)]
+//#[tokio::main(core_threads = 1, max_threads = 1)]
+#[tokio::main]
 async fn main() -> Result<(), Error> {
     Environment {
         trader: Custom::new(Interval::FiveMinutes),
