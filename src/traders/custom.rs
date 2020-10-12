@@ -57,12 +57,16 @@ impl Custom {
         let mut stream = Box::pin(stream);
         
         while let Some(candlestick) = stream.next().await {
+            println!("consume candlestick {}", market);
+
             let analysis = (
                 self.bollinger_bands.compute(&candlestick, !candlestick.last),
                 self.rsi.compute(&candlestick, !candlestick.last),
                 self.macd.compute(candlestick.close.to_f64().unwrap(), !candlestick.last),
                 self.delta_obv.compute(&candlestick, !candlestick.last),
             );
+
+            println!("analysis {:?}", analysis);
     
             let side = if let (
                 Some((upper, lower)),
