@@ -58,7 +58,7 @@ impl Custom {
         let mut stream = Box::pin(stream);
         
         while let Ok(Some(candlestick)) = timeout_at(
-            Instant::now() + std::time::Duration::from_secs(60),
+            Instant::now() + std::time::Duration::from_secs(180),
             stream.next()
         ).await {
             println!("consume candlestick {}", market);
