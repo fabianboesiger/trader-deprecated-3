@@ -53,7 +53,7 @@ gen_assets! {
     EOS,
     LTC,
     YFI,
-    LEND,
+    //LEND,
     ADA,
     BCH,
     ATOM,
