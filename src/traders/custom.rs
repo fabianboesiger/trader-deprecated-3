@@ -18,6 +18,7 @@ use tokio::sync::{mpsc::Sender, Barrier};
 use std::sync::Arc;
 use rust_decimal::Decimal;
 use chrono::{DateTime, Utc, Duration};
+use tokio::time::{Instant, timeout_at};
 
 #[derive(Copy, Clone)]
 enum Position {
@@ -56,7 +57,10 @@ impl Custom {
     async fn consume_candlesticks<S: Stream<Item = Candlestick>>(&mut self, stream: S, exchange: &Binance, market: Market, barrier: Arc<Barrier>, mut sender: &mut Sender<Order>) {
         let mut stream = Box::pin(stream);
         
-        while let Some(candlestick) = stream.next().await {
+        while let Ok(Some(candlestick)) = timeout_at(
+            Instant::now() + std::time::Duration::from_secs(60),
+            stream.next()
+        ).await {
             println!("consume candlestick {}", market);
 
             let analysis = (
@@ -183,7 +187,7 @@ impl Trader for Custom {
             format!("{}", self.interval),
         );
 
-        // If the stream returns none, assume connection loss and try to reconnect.
+        // If the stream returns none or timed out, assume connection loss and try to reconnect.
         loop {
             // Get live data using websocket API.
             let mut websocket = BinanceWebsocket::new();
@@ -196,6 +200,8 @@ impl Trader for Custom {
                     None
                 }
             });
+
+
 
             self.consume_candlesticks(live_candlesticks, exchange, market, barrier.clone(), &mut sender).await;
             println!("attempting to reconnect {}", market);
