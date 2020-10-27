@@ -1,7 +1,7 @@
 use super::Value;
 use chrono::{DateTime, Utc};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Side {
     Buy,
     Sell,

@@ -1,18 +1,36 @@
-use crate::model::{Asset, Market, MAIN_ASSET};
-use crate::{loggers::Logger, managers::Manager, traders::Trader};
+use crate::model::{Asset, Market, MAIN_ASSET, Interval};
+use crate::{indicators::Indicator, loggers::Logger, managers::Manager, trader::Trader, strategies::Strategy};
 use openlimits::binance::Binance;
 use tokio::sync::{mpsc::channel, Barrier};
 use tokio::task;
 use std::sync::Arc;
 
-pub struct Environment<T: Trader, M: Manager, L: Logger> {
-    pub trader: T,
-    pub manager: M,
-    pub logger: L,
+pub struct Environment<S, I>
+where
+    S: Strategy<I>,
+    I: Indicator
+{
+    strategy: S,
+    phantom: std::marker::PhantomData<I>,
+    manager: crate::managers::Simulated,
+    logger: crate::loggers::Web<([u8; 4], u16)>,
 }
 
-impl<T: Trader, M: Manager, L: Logger> Environment<T, M, L> {
-    pub async fn trade(self) {
+impl<S, I> Environment<S, I>
+where
+    S: Strategy<I>,
+    I: Indicator
+{
+    pub fn new(strategy: S) -> Self {
+        Environment {
+            strategy,
+            phantom: std::marker::PhantomData,
+            manager: crate::managers::Simulated::new(10.0, 0.001),
+            logger: crate::loggers::Web::new(([127, 0, 0, 1], 8000)),
+        }
+    }
+
+    pub async fn run(self) {
         println!("start trading");
 
         let exchange: &'static Binance = Box::leak(Box::new(Binance::new(false).await));
@@ -29,7 +47,7 @@ impl<T: Trader, M: Manager, L: Logger> Environment<T, M, L> {
 
         for asset in tradable
         {
-            let trader = self.trader.clone();
+            let trader = Trader::new(self.strategy.clone(), Interval::FiveMinutes);
             let barrier = barrier.clone();
             let sender = order_sender.clone();
             let market = Market {

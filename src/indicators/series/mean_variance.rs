@@ -1,21 +1,23 @@
+use super::Series;
+use crate::model::Value;
 use std::collections::VecDeque;
 
 #[derive(Clone)]
-pub struct MeanVariance {
-    period: usize,
+pub struct MeanVariance<const PERIOD: usize> {
     buffer: VecDeque<f64>,
 }
 
-impl MeanVariance {
-    pub fn new(period: usize) -> Self {
+impl<const PERIOD: usize> Series for MeanVariance<PERIOD> {
+    type Analysis = (f64, f64);
+
+    fn new() -> Self {
         MeanVariance {
-            period,
-            buffer: VecDeque::with_capacity(period),
+            buffer: VecDeque::with_capacity(PERIOD),
         }
     }
 
-    pub fn compute(&mut self, value: f64, recover: bool) -> Option<(f64, f64)> {
-        if self.buffer.len() >= self.period {
+    fn compute(&mut self, value: f64, recover: bool) -> Option<(f64, f64)> {
+        if self.buffer.len() >= PERIOD {
             let removed = self.buffer.pop_front();
             self.buffer.push_back(value);
 
@@ -26,8 +28,8 @@ impl MeanVariance {
                 sum_squared += value * value;
             }
 
-            let mean = sum / self.period as f64;
-            let variance = sum_squared / self.period as f64 - mean.powi(2);
+            let mean = sum / PERIOD as f64;
+            let variance = sum_squared / PERIOD as f64 - mean.powi(2);
 
             if recover {
                 self.buffer.pop_back();

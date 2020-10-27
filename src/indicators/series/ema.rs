@@ -1,17 +1,20 @@
+use super::Series;
+
 #[derive(Clone)]
-pub struct Ema {
-    alpha: f64,
+pub struct Ema<const ALPHA: f64> {
     ema: Option<f64>,
 }
 
-impl Ema {
-    pub fn new(alpha: f64) -> Self {
-        Ema { alpha, ema: None }
+impl<const ALPHA: f64> Series for Ema<ALPHA> {
+    type Analysis = f64;
+
+    fn new() -> Self {
+        Ema { ema: None }
     }
 
-    pub fn compute(&mut self, value: f64, recover: bool) -> Option<f64> {
+    fn compute(&mut self, value: f64, recover: bool) -> Option<f64> {
         if let Some(mut ema) = self.ema.clone() {
-            ema += self.alpha * (value - ema);
+            ema += ALPHA * (value - ema);
             if !recover {
                 self.ema = Some(ema);
             }
