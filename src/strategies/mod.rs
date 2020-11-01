@@ -14,7 +14,7 @@ pub struct Custom;
 
 type Indicators = (
     Current<Value>,
-    Current<Macd<30.0, 40.0, 20.0>>,
+    Current<Macd<40.0, 50.0, 30.0>>,
     BollingerBands<20, 2.0>,
 );
 
@@ -33,7 +33,7 @@ impl Strategy<Indicators> for Custom {
                         //self.position = Position::Short;
                         Some(Side::Sell)
                     } else {
-                        if value < buy_value.to_f64().unwrap() * 0.95 {
+                        if value < buy_value.to_f64().unwrap() * 0.98 {
                             return Some(Side::Sell);
                         }
 
