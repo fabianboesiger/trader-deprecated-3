@@ -3,14 +3,14 @@ mod mean_variance;
 mod ema;
 mod mma;
 mod macd;
-mod fft;
+//mod fft;
 
 pub use value::*;
 pub use mean_variance::*;
 pub use ema::*;
 pub use mma::*;
 pub use macd::*;
-pub use fft::*;
+//pub use fft::*;
 
 use std::fmt::Debug;
 
