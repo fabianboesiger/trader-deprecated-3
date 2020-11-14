@@ -1,6 +1,5 @@
 use super::{Series, Ema};
 
-#[derive(Clone)]
 pub struct Macd<const FAST: f64, const SLOW: f64, const SIGNAL: f64> {
     slow_mma: Ema::<SLOW>,
     fast_mma: Ema::<FAST>,

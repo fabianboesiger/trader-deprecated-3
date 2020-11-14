@@ -1,25 +1,27 @@
+use super::{Indicator, series::{Series, Mma}};
 use crate::model::Candlestick;
 use num_traits::cast::ToPrimitive;
 
-use super::Mma;
 
 #[derive(Clone)]
-pub struct Rsi {
+pub struct Rsi<const PERIOD: usize> {
     previous_close: Option<f64>,
-    up_mma: Mma,
-    down_mma: Mma,
+    up_mma: Mma::<PERIOD>,
+    down_mma: Mma::<PERIOD>,
 }
 
-impl Rsi {
-    pub fn new(period: usize) -> Self {
+impl<const PERIOD: usize> Indicator for Rsi<PERIOD> {
+    type Analysis = f64;
+
+    fn new() -> Self {
         Rsi {
             previous_close: None,
-            up_mma: Mma::new(period),
-            down_mma: Mma::new(period),
+            up_mma: Mma::new(),
+            down_mma: Mma::new(),
         }
     }
 
-    pub fn compute(&mut self, value: &Candlestick, recover: bool) -> Option<f64> {
+    fn compute(&mut self, value: &Candlestick, recover: bool) -> Option<f64> {
         let current_close = value.close.to_f64().unwrap();
         let output = if let Some(previous_close) = self.previous_close {
             let (up, down) = if current_close > previous_close {

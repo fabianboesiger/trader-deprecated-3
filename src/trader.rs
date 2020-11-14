@@ -3,7 +3,7 @@ use tokio::sync::{mpsc::Sender, Barrier};
 use std::sync::Arc;
 use crate::{
     indicators::Indicator,
-    model::{Candlestick, Interval, Market, Order, Side, Value},
+    model::{Candlestick, Interval, Market, Order, Side, Value, Action},
     strategies::Strategy,
 };
 use futures::{stream, Stream, StreamExt};
@@ -16,10 +16,15 @@ use openlimits::binance::{
 };
 use rust_decimal::Decimal;
 use tokio::time::{Instant, timeout_at};
+use num_traits::cast::ToPrimitive;
 
 #[derive(Copy, Clone)]
 pub enum Position {
-    Long(Decimal),
+    Long {
+        buy_value: f64,
+        stop_loss: Option<f64>,
+        take_profit: Option<f64>,
+    },
     Short,
 }
 
@@ -60,21 +65,56 @@ where
 
             let recover = !candlestick.last;
             let analysis = self.indicator.compute(&candlestick, recover);
+            let current_value = candlestick.close.to_f64().unwrap();
 
             println!("analysis {:?}", analysis);
     
-            let side = self.strategy.run(analysis, self.position);
+            let mut action = self.strategy.run(analysis, self.position);
 
-            if let Some(side) = side {
-                match side {
-                    Side::Buy => {
-                        self.position = Position::Long(candlestick.close);
-                    }
-                    Side::Sell => {
-                        self.position = Position::Short;
-                    }
-                }
+            let do_exit = if let Position::Long {
+                stop_loss,
+                take_profit,
+                ..
+            } = self.position {
+                let do_stop_loss = if let Some(stop_loss) = stop_loss {
+                    current_value <= stop_loss
+                } else {
+                    false
+                };
+                let do_take_profit = if let Some(take_profit) = take_profit {
+                    current_value >= take_profit
+                } else {
+                    false
+                };
+                do_stop_loss || do_take_profit
+            } else {
+                false
+            };
+
+            if do_exit {
+                action = Action::Exit;
             }
+
+            let side = match action {
+                Action::Enter {
+                    stop_loss,
+                    take_profit,
+                } => {
+                    self.position = Position::Long {
+                        buy_value: current_value,
+                        stop_loss,
+                        take_profit,
+                    };
+                    Some(Side::Buy)
+                },
+                Action::Exit => {
+                    self.position = Position::Short;
+                    Some(Side::Sell)
+                },
+                Action::Hold => {
+                    None
+                }
+            };
             
             if candlestick.live {
                 println!("send order {}", market);

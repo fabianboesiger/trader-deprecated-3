@@ -10,7 +10,7 @@ impl Series for Value {
         Value
     }
 
-    fn compute(&mut self, value: f64, recover: bool) -> Option<Self::Analysis> {
+    fn compute(&mut self, value: f64, _recover: bool) -> Option<Self::Analysis> {
         Some(value)
     }    
 }

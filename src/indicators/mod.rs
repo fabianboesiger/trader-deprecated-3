@@ -1,22 +1,24 @@
 pub mod series;
 
 mod bollinger_bands;
-//mod rsi;
+mod rsi;
 mod obv;
-//mod obv_macd;
 mod current;
+mod tr;
+mod atr;
 
 pub use bollinger_bands::*;
-//pub use rsi::*;
+pub use rsi::*;
 pub use obv::*;
-//pub use obv_macd::*;
 pub use current::*;
+pub use tr::*;
+pub use atr::*;
 
 use crate::model::Candlestick;
 use std::fmt::Debug;
 
-pub trait Indicator: Clone + Send + 'static {
-    type Analysis: Clone + Debug + Send + 'static;
+pub trait Indicator: Send + 'static {
+    type Analysis: Debug + Send + 'static;
 
     fn new() -> Self;
     fn compute(&mut self, value: &Candlestick, recover: bool) -> Option<Self::Analysis>;

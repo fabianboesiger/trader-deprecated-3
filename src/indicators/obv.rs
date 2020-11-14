@@ -1,3 +1,4 @@
+use super::Indicator;
 use crate::model::Candlestick;
 use num_traits::cast::ToPrimitive;
 
@@ -7,15 +8,17 @@ pub struct Obv {
     previous_value: Option<f64>, 
 }
 
-impl Obv {
-    pub fn new() -> Self {
+impl Indicator for Obv {
+    type Analysis = f64;
+
+    fn new() -> Self {
         Obv {
             sum: 0.0,
             previous_value: None,
         }
     }
 
-    pub fn compute(&mut self, value: &Candlestick, recover: bool) -> f64 {
+    fn compute(&mut self, value: &Candlestick, recover: bool) -> Option<f64> {
         let current_value = value.close.to_f64().unwrap();
         let volume = value.volume.to_f64().unwrap();
         let new_sum = self.sum + if let Some(previous_value) = self.previous_value {
@@ -36,6 +39,6 @@ impl Obv {
             self.sum = new_sum;
         }
 
-        new_sum
+        Some(new_sum)
     }
 }

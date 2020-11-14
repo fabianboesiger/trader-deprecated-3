@@ -17,3 +17,4 @@ serde_json = "1.0"
 dotenv = "0.15"
 sqlx = { git = "https://github.com/launchbadge/sqlx", default-features = false, features = ["runtime-tokio", "postgres", "decimal", "chrono", "macros"] }
 openlimits = { git = "https://github.com/nash-io/openlimits" }
+stft = { git = "https://github.com/snd/stft" }
