@@ -100,16 +100,24 @@ where
                     stop_loss,
                     take_profit,
                 } => {
-                    self.position = Position::Long {
-                        buy_value: current_value,
-                        stop_loss,
-                        take_profit,
-                    };
-                    Some(Side::Buy)
+                    if let Position::Short = self.position {
+                        self.position = Position::Long {
+                            buy_value: current_value,
+                            stop_loss,
+                            take_profit,
+                        };
+                        Some(Side::Buy)
+                    } else {
+                        None
+                    }
                 },
                 Action::Exit => {
-                    self.position = Position::Short;
-                    Some(Side::Sell)
+                    if let Position::Long {..} = self.position {
+                        self.position = Position::Short;
+                        Some(Side::Sell)
+                    } else {
+                        None
+                    }
                 },
                 Action::Hold => {
                     None
