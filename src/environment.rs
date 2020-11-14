@@ -47,7 +47,7 @@ where
 
         for asset in tradable
         {
-            let trader = Trader::new(self.strategy.clone(), Interval::ThreeMinutes);
+            let trader = Trader::new(self.strategy.clone(), Interval::FiveMinutes);
             let barrier = barrier.clone();
             let sender = order_sender.clone();
             let market = Market {
