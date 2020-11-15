@@ -34,8 +34,12 @@ impl<const PERIOD: usize> Indicator for Rsi<PERIOD> {
                 self.up_mma.compute(up, recover),
                 self.down_mma.compute(down, recover),
             ) {
-                let relative_strength = up / down;
-                Some(100.0 - 100.0 / (1.0 + relative_strength))
+                if down != 0.0 {
+                    let relative_strength = up / down;
+                    Some(100.0 - 100.0 / (1.0 + relative_strength))
+                } else {
+                    Some(100.0)
+                }
             } else {
                 None
             }
