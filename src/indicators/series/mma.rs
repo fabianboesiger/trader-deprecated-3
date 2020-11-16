@@ -14,7 +14,7 @@ impl<const PERIOD: usize> Series for Mma<PERIOD> {
 
     fn compute(&mut self, value: f64, recover: bool) -> Option<f64> {
         if let Some(mut mma) = self.mma.clone() {
-            mma += (((PERIOD - 1) as f64) * mma + value) / (PERIOD as f64);
+            mma = (((PERIOD - 1) as f64) * mma + value) / (PERIOD as f64);
             if !recover {
                 self.mma = Some(mma);
             }

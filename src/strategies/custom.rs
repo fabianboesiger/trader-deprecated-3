@@ -45,7 +45,6 @@ impl Strategy<Indicators> for Custom {
 
             let signal = (bb_signal + rsi_signal) / 2.0;
 
-            println!("rsi: {}", rsi);
             println!("bb_signal: {}, rsi_signal: {}, allowed to enter: {}", bb_signal, rsi_signal, self.allowed_to_enter);
 
             if signal <= -1.0 && self.allowed_to_enter {
