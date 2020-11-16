@@ -31,7 +31,13 @@ impl Custom {
 
 impl Strategy<Indicators> for Custom {
     fn run(&mut self, analysis: Option<<Indicators as Indicator>::Analysis>) -> Action {
-        if let Some((value, (_macd, _signal, _histogram), (upper, lower), rsi, atr)) = analysis {
+        if let Some((
+            value,
+            (_macd, _signal, _histogram),
+            (upper, lower),
+            rsi,
+            atr
+        )) = analysis {
             let bb_stdev = (upper - lower) / 2.0;
             let bb_signal = (value - (lower + bb_stdev)) / bb_stdev;
 
@@ -39,6 +45,7 @@ impl Strategy<Indicators> for Custom {
 
             let signal = (bb_signal + rsi_signal) / 2.0;
 
+            println!("rsi: {}", rsi);
             println!("bb_signal: {}, rsi_signal: {}, allowed to enter: {}", bb_signal, rsi_signal, self.allowed_to_enter);
 
             if signal <= -1.0 && self.allowed_to_enter {
