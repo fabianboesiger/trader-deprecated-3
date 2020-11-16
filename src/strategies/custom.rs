@@ -42,16 +42,16 @@ impl Strategy<Indicators> for Custom {
 
             let signal = (bb_signal + rsi_signal) / 2.0;
 
-            if signal < -0.9 && self.allowed_to_enter {
+            if signal <= -1.0 && self.allowed_to_enter {
                 self.allowed_to_enter = false;
                 return Action::Enter {
                     take_profit: Some(value + 2.0 * atr),
-                    stop_loss: Some(value - 2.0 * atr),
+                    stop_loss: Some(value - 1.9 * atr),
                 };
             } else
-            if signal > 0.8 {
+            if signal >= 0.8 {
                 self.allowed_to_enter = true;
-                if signal > 0.9 {
+                if signal >= 1.0 {
                     return Action::Exit;
                 }
             }
