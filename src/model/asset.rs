@@ -75,5 +75,9 @@ gen_assets! {
     WAVES,
     XLM,
     BAT,
-    XMR
+    XMR,
+    AAVE,
+    ALPHA,
+    AXS,
+    FIL
 }

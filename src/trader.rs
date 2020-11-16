@@ -69,7 +69,7 @@ where
 
             println!("analysis {:?}", analysis);
     
-            let mut action = self.strategy.run(analysis, self.position);
+            let mut action = self.strategy.run(analysis);
 
             let do_exit = if let Position::Long {
                 stop_loss,
