@@ -12,5 +12,5 @@ impl Series for Value {
 
     fn compute(&mut self, value: f64, _recover: bool) -> Option<Self::Analysis> {
         Some(value)
-    }    
+    }
 }

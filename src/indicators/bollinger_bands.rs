@@ -1,4 +1,7 @@
-use super::{Indicator, series::{Series, MeanVariance}};
+use super::{
+    series::{MeanVariance, Series},
+    Indicator,
+};
 use crate::model::Candlestick;
 use num_traits::cast::ToPrimitive;
 

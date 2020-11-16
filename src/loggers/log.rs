@@ -1,20 +1,19 @@
 use crate::model::{Quantity, Value};
-use serde::Serialize;
 use chrono::{DateTime, Utc};
-use sqlx::{PgPool, Row};
 use futures::{Stream, StreamExt};
 use rust_decimal::prelude::*;
+use serde::Serialize;
+use sqlx::{PgPool, Row};
 
 #[derive(Debug, Serialize)]
 pub enum Log {
     Trade {
         buy: Quantity,
         sell: Quantity,
-        timestamp: DateTime<Utc>
+        timestamp: DateTime<Utc>,
     },
     Value(Value),
 }
-
 
 impl Log {
     /*
@@ -74,9 +73,9 @@ impl Log {
                 .execute(pool)
                 .await
                 .unwrap();
-            },
+            }
             _ => {}
-        } 
+        }
     }
 
     pub fn select_all_trades(pool: &PgPool) -> impl Stream<Item = Result<Log, sqlx::Error>> {
@@ -91,35 +90,37 @@ impl Log {
                     date_time
                 FROM trades
                 ORDER BY date_time ASC
-            "#
+            "#,
         )
         .fetch(pool)
-        .map(|row| row.map(|row| {
-            Log::Trade {
-                buy: Quantity {
-                    asset: row.try_get::<String, _>("buy_asset").unwrap().into(),
-                    quantity: Decimal::from_f64(row.try_get("buy_quantity").unwrap()).unwrap(),
-                },
-                sell: Quantity {
-                    asset: row.try_get::<String, _>("sell_asset").unwrap().into(),
-                    quantity: Decimal::from_f64(row.try_get("sell_quantity").unwrap()).unwrap(),
-                },
-                timestamp: row.try_get("date_time").unwrap()
-            }
-            /*
-            println!("{} {}", row.try_get::<f64, _>("casted_buy_quantity").unwrap(), row.try_get::<f64, _>("casted_sell_quantity").unwrap());
-            Log::Trade {
-                buy: Quantity {
-                    asset: row.try_get::<String, _>("buy_asset").unwrap().into(),
-                    quantity: row.try_get("buy_quantity").unwrap(),
-                },
-                sell: Quantity {
-                    asset: row.try_get::<String, _>("sell_asset").unwrap().into(),
-                    quantity: row.try_get("sell_quantity").unwrap(),
-                },
-                timestamp: row.try_get("date_time").unwrap()
-            }
-            */
-        }))
+        .map(|row| {
+            row.map(|row| {
+                Log::Trade {
+                    buy: Quantity {
+                        asset: row.try_get::<String, _>("buy_asset").unwrap().into(),
+                        quantity: Decimal::from_f64(row.try_get("buy_quantity").unwrap()).unwrap(),
+                    },
+                    sell: Quantity {
+                        asset: row.try_get::<String, _>("sell_asset").unwrap().into(),
+                        quantity: Decimal::from_f64(row.try_get("sell_quantity").unwrap()).unwrap(),
+                    },
+                    timestamp: row.try_get("date_time").unwrap(),
+                }
+                /*
+                println!("{} {}", row.try_get::<f64, _>("casted_buy_quantity").unwrap(), row.try_get::<f64, _>("casted_sell_quantity").unwrap());
+                Log::Trade {
+                    buy: Quantity {
+                        asset: row.try_get::<String, _>("buy_asset").unwrap().into(),
+                        quantity: row.try_get("buy_quantity").unwrap(),
+                    },
+                    sell: Quantity {
+                        asset: row.try_get::<String, _>("sell_asset").unwrap().into(),
+                        quantity: row.try_get("sell_quantity").unwrap(),
+                    },
+                    timestamp: row.try_get("date_time").unwrap()
+                }
+                */
+            })
+        })
     }
 }

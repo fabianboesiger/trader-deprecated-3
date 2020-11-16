@@ -1,6 +1,6 @@
-use openlimits::binance::model::{KlineSummary, websocket::CandlestickMessage};
+use chrono::{DateTime, TimeZone, Utc};
+use openlimits::binance::model::{websocket::CandlestickMessage, KlineSummary};
 use rust_decimal::prelude::*;
-use chrono::{DateTime, Utc, TimeZone};
 
 #[derive(Debug)]
 pub struct Candlestick {

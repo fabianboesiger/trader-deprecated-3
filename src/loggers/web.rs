@@ -1,16 +1,24 @@
 use super::{Log, Logger};
-use async_trait::async_trait;
-use futures::{FutureExt, SinkExt, StreamExt};
-use sqlx::PgPool;
-use std::{net::SocketAddr, sync::Arc};
-use tokio::sync::{mpsc::{Receiver, Sender, channel}, Mutex, RwLock};
-use warp::ws::{Message, WebSocket};
-use warp::Filter;
-use std::collections::HashMap;
 use crate::model::{Market, Value};
+use async_trait::async_trait;
+use futures::StreamExt;
+use sqlx::PgPool;
+use std::{
+    collections::HashMap,
+    net::SocketAddr,
+    sync::Arc,
+};
+use tokio::sync::{
+    mpsc::{channel, Receiver, Sender},
+    Mutex, RwLock,
+};
+use warp::{
+    ws::{Message, WebSocket},
+    Filter,
+};
 
 type Senders = Arc<Mutex<Vec<Sender<Result<Message, warp::Error>>>>>;
-type Cache =  Arc<RwLock<HashMap<Market, Value>>>;
+type Cache = Arc<RwLock<HashMap<Market, Value>>>;
 
 pub struct Web<A: Into<SocketAddr> + Send + Sync + 'static> {
     address: A,
@@ -21,7 +29,7 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Web<A> {
     pub fn new(address: A) -> Self {
         Self {
             address,
-            cache: Arc::new(RwLock::new(HashMap::new()))
+            cache: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
@@ -51,9 +59,11 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
             .and(warp::any().map(move || senders_clone.clone()))
             .and(warp::any().map(move || pool_clone.clone()))
             .and(warp::any().map(move || cache_clone.clone()))
-            .map(|ws: warp::ws::Ws, senders: Senders, pool: Arc<PgPool>, cache: Cache| {
-                ws.on_upgrade(move |ws| connect(ws, senders, pool, cache))
-            });
+            .map(
+                |ws: warp::ws::Ws, senders: Senders, pool: Arc<PgPool>, cache: Cache| {
+                    ws.on_upgrade(move |ws| connect(ws, senders, pool, cache))
+                },
+            );
 
         let routes = warp::fs::dir("web").or(socket);
 
@@ -67,7 +77,7 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
                     if let Log::Value(value) = log {
                         cache.write().await.insert(value.market, value);
                     }
-                    
+
                     let data = serde_json::to_string(&log).unwrap();
 
                     let mut senders = senders.lock().await;

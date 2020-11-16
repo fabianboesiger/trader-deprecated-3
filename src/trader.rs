@@ -1,12 +1,11 @@
-use openlimits::binance::Binance;
-use tokio::sync::{mpsc::Sender, Barrier};
-use std::sync::Arc;
 use crate::{
     indicators::Indicator,
-    model::{Candlestick, Interval, Market, Order, Side, Value, Action},
+    model::{Action, Candlestick, Interval, Market, Order, Side, Value},
     strategies::Strategy,
 };
 use futures::{stream, Stream, StreamExt};
+use num_traits::cast::ToPrimitive;
+use openlimits::binance::Binance;
 use openlimits::binance::{
     client::websocket::BinanceWebsocket,
     model::{
@@ -15,8 +14,9 @@ use openlimits::binance::{
     },
 };
 use rust_decimal::Decimal;
-use tokio::time::{Instant, timeout_at};
-use num_traits::cast::ToPrimitive;
+use std::sync::Arc;
+use tokio::sync::{mpsc::Sender, Barrier};
+use tokio::time::{timeout_at, Instant};
 
 #[derive(Copy, Clone)]
 pub enum Position {
@@ -32,7 +32,7 @@ pub enum Position {
 pub struct Trader<S, I>
 where
     I: Indicator,
-    S: Strategy<I>
+    S: Strategy<I>,
 {
     interval: Interval,
     position: Position,
@@ -43,7 +43,7 @@ where
 impl<S, I> Trader<S, I>
 where
     I: Indicator,
-    S: Strategy<I>
+    S: Strategy<I>,
 {
     pub fn new(strategy: S, interval: Interval) -> Self {
         Trader {
@@ -54,13 +54,22 @@ where
         }
     }
 
-    async fn consume_candlesticks<T: Stream<Item = Candlestick>>(&mut self, stream: T, exchange: &Binance, market: Market, barrier: Arc<Barrier>, mut sender: &mut Sender<Order>) {
+    async fn consume_candlesticks<T: Stream<Item = Candlestick>>(
+        &mut self,
+        stream: T,
+        exchange: &Binance,
+        market: Market,
+        barrier: Arc<Barrier>,
+        mut sender: &mut Sender<Order>,
+    ) {
         let mut stream = Box::pin(stream);
-        
+
         while let Ok(Some(candlestick)) = timeout_at(
             Instant::now() + std::time::Duration::from_secs(180),
-            stream.next()
-        ).await {
+            stream.next(),
+        )
+        .await
+        {
             println!("consume candlestick {}", market);
 
             let recover = !candlestick.last;
@@ -68,14 +77,15 @@ where
             let current_value = candlestick.close.to_f64().unwrap();
 
             println!("analysis {:?}", analysis);
-    
+
             let mut action = self.strategy.run(analysis);
 
             let do_exit = if let Position::Long {
                 stop_loss,
                 take_profit,
                 ..
-            } = self.position {
+            } = self.position
+            {
                 let do_stop_loss = if let Some(stop_loss) = stop_loss {
                     current_value <= stop_loss
                 } else {
@@ -110,20 +120,18 @@ where
                     } else {
                         None
                     }
-                },
+                }
                 Action::Exit => {
-                    if let Position::Long {..} = self.position {
+                    if let Position::Long { .. } = self.position {
                         self.position = Position::Short;
                         Some(Side::Sell)
                     } else {
                         None
                     }
-                },
-                Action::Hold => {
-                    None
                 }
+                Action::Hold => None,
             };
-            
+
             if candlestick.live {
                 println!("send order {}", market);
 
@@ -134,12 +142,12 @@ where
                             market,
                         },
                         side,
-                        timestamp: candlestick.current_time
+                        timestamp: candlestick.current_time,
                     })
                     .await
                     .unwrap();
             }
-    
+
             /*
             if !candlestick.live {
                 barrier.wait().await;
@@ -148,7 +156,13 @@ where
         }
     }
 
-    pub async fn run(mut self, exchange: &Binance, market: Market, barrier: Arc<Barrier>, mut sender: Sender<Order>) {
+    pub async fn run(
+        mut self,
+        exchange: &Binance,
+        market: Market,
+        barrier: Arc<Barrier>,
+        mut sender: Sender<Order>,
+    ) {
         // Get historical data using REST API.
         let params = KlineParams {
             symbol: format!("{}{}", market.base, market.quote),
@@ -170,7 +184,14 @@ where
                 .collect::<Vec<Candlestick>>(),
         );
 
-        self.consume_candlesticks(historical_candlesticks, exchange, market, barrier.clone(), &mut sender).await;
+        self.consume_candlesticks(
+            historical_candlesticks,
+            exchange,
+            market,
+            barrier.clone(),
+            &mut sender,
+        )
+        .await;
 
         // Candlestick subscription.
         let sub = Subscription::Candlestick(
@@ -192,11 +213,15 @@ where
                 }
             });
 
-
-
-            self.consume_candlesticks(live_candlesticks, exchange, market, barrier.clone(), &mut sender).await;
+            self.consume_candlesticks(
+                live_candlesticks,
+                exchange,
+                market,
+                barrier.clone(),
+                &mut sender,
+            )
+            .await;
             println!("attempting to reconnect {}", market);
         }
     }
-    
 }

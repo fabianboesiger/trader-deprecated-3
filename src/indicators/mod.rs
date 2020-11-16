@@ -1,18 +1,18 @@
 pub mod series;
 
-mod bollinger_bands;
-mod rsi;
-mod obv;
-mod current;
-mod tr;
 mod atr;
+mod bollinger_bands;
+mod current;
+mod obv;
+mod rsi;
+mod tr;
 
-pub use bollinger_bands::*;
-pub use rsi::*;
-pub use obv::*;
-pub use current::*;
-pub use tr::*;
 pub use atr::*;
+pub use bollinger_bands::*;
+pub use current::*;
+pub use obv::*;
+pub use rsi::*;
+pub use tr::*;
 
 use crate::model::Candlestick;
 use std::fmt::Debug;
@@ -41,7 +41,7 @@ macro_rules! tuple {
             #[allow(non_snake_case)]
             fn compute(&mut self, candlestick: &Candlestick, recover: bool) -> Option<Self::Analysis> {
                 let ($($name,)+) = self;
-                
+
                 if let ($(Some($name),)+) = ($($name.compute(candlestick, recover),)+) {
                     Some(($($name,)+))
                 } else {

@@ -1,10 +1,13 @@
-use super::{Indicator, Tr, series::{Series, MeanVariance}};
+use super::{
+    series::{MeanVariance, Series},
+    Indicator, Tr,
+};
 use crate::model::Candlestick;
 
 #[derive(Clone)]
 pub struct Atr<const PERIOD: usize> {
     tr: Tr,
-    mean_variance: MeanVariance::<PERIOD>,
+    mean_variance: MeanVariance<PERIOD>,
 }
 
 impl<const PERIOD: usize> Indicator for Atr<PERIOD> {

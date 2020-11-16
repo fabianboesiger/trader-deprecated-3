@@ -1,13 +1,15 @@
-use super::{Indicator, series::{Series, Mma}};
+use super::{
+    series::{Mma, Series},
+    Indicator,
+};
 use crate::model::Candlestick;
 use num_traits::cast::ToPrimitive;
-
 
 #[derive(Clone)]
 pub struct Rsi<const PERIOD: usize> {
     previous_close: Option<f64>,
-    up_mma: Mma::<PERIOD>,
-    down_mma: Mma::<PERIOD>,
+    up_mma: Mma<PERIOD>,
+    down_mma: Mma<PERIOD>,
 }
 
 impl<const PERIOD: usize> Indicator for Rsi<PERIOD> {

@@ -9,10 +9,5 @@ use tokio::sync::mpsc::{Receiver, Sender};
 
 #[async_trait]
 pub trait Manager {
-    async fn run(
-        self,
-        exchange: &Binance,
-        receiver: Receiver<Order>,
-        sender: Sender<Log>,
-    );
+    async fn run(self, exchange: &Binance, receiver: Receiver<Order>, sender: Sender<Log>);
 }

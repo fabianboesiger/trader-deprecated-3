@@ -1,6 +1,9 @@
 use super::Strategy;
 use crate::{
-    indicators::{Indicator, BollingerBands, Current, Rsi, Atr, series::{Value, Macd}},
+    indicators::{
+        series::{Macd, Value},
+        Atr, BollingerBands, Current, Indicator, Rsi,
+    },
     model::Action,
     trader::Position,
 };
@@ -15,26 +18,20 @@ type Indicators = (
 
 #[derive(Clone)]
 pub struct Custom {
-    allowed_to_enter: bool
+    allowed_to_enter: bool,
 }
 
 impl Custom {
     pub fn new() -> Self {
         Self {
-            allowed_to_enter: false
+            allowed_to_enter: false,
         }
     }
 }
 
 impl Strategy<Indicators> for Custom {
     fn run(&mut self, analysis: Option<<Indicators as Indicator>::Analysis>) -> Action {
-        if let Some((
-            value,
-            (_macd, _signal, _histogram),
-            (upper, lower),
-            rsi,
-            atr,
-        )) = analysis {
+        if let Some((value, (_macd, _signal, _histogram), (upper, lower), rsi, atr)) = analysis {
             let bb_stdev = (upper - lower) / 2.0;
             let bb_signal = (value - (lower + bb_stdev)) / bb_stdev;
 
@@ -48,8 +45,7 @@ impl Strategy<Indicators> for Custom {
                     take_profit: Some(value + 2.0 * atr),
                     stop_loss: Some(value - 1.9 * atr),
                 };
-            } else
-            if signal >= 0.8 {
+            } else if signal >= 0.8 {
                 self.allowed_to_enter = true;
                 if signal >= 1.0 {
                     return Action::Exit;

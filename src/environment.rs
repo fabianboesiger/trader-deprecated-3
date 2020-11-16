@@ -1,14 +1,16 @@
-use crate::model::{Asset, Market, MAIN_ASSET, Interval};
-use crate::{indicators::Indicator, loggers::Logger, managers::Manager, trader::Trader, strategies::Strategy};
+use crate::model::{Asset, Interval, Market, MAIN_ASSET};
+use crate::{
+    indicators::Indicator, loggers::Logger, managers::Manager, strategies::Strategy, trader::Trader,
+};
 use openlimits::binance::Binance;
+use std::sync::Arc;
 use tokio::sync::{mpsc::channel, Barrier};
 use tokio::task;
-use std::sync::Arc;
 
 pub struct Environment<S, I>
 where
     S: Strategy<I>,
-    I: Indicator
+    I: Indicator,
 {
     strategy: S,
     phantom: std::marker::PhantomData<I>,
@@ -19,7 +21,7 @@ where
 impl<S, I> Environment<S, I>
 where
     S: Strategy<I>,
-    I: Indicator
+    I: Indicator,
 {
     pub fn new(strategy: S) -> Self {
         Environment {
@@ -45,8 +47,7 @@ where
 
         let barrier = Arc::new(Barrier::new(tradable.len()));
 
-        for asset in tradable
-        {
+        for asset in tradable {
             let trader = Trader::new(self.strategy.clone(), Interval::ThirtyMinutes);
             let barrier = barrier.clone();
             let sender = order_sender.clone();

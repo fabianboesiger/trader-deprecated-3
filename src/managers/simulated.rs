@@ -71,7 +71,12 @@ impl Manager for Simulated {
         mut sender: Sender<Log>,
     ) {
         let mut _trade_count: u64 = 0;
-        while let Some(Order { side, value, timestamp }) = receiver.recv().await {
+        while let Some(Order {
+            side,
+            value,
+            timestamp,
+        }) = receiver.recv().await
+        {
             assert_eq!(value.market.quote, MAIN_ASSET);
             println!("recieve order {}", value.market);
 
@@ -99,7 +104,14 @@ impl Manager for Simulated {
                             let sell = quantity;
 
                             _trade_count += 1;
-                            sender.send(Log::Trade { buy, sell, timestamp }).await.unwrap();
+                            sender
+                                .send(Log::Trade {
+                                    buy,
+                                    sell,
+                                    timestamp,
+                                })
+                                .await
+                                .unwrap();
 
                             self.assets.get_mut(&b).unwrap().quantity += buy;
                             self.assets.get_mut(&q).unwrap().quantity -= sell;
@@ -112,11 +124,18 @@ impl Manager for Simulated {
                             let sell = quantity;
 
                             _trade_count += 1;
-                            sender.send(Log::Trade { buy, sell, timestamp }).await.unwrap();
+                            sender
+                                .send(Log::Trade {
+                                    buy,
+                                    sell,
+                                    timestamp,
+                                })
+                                .await
+                                .unwrap();
 
                             self.assets.get_mut(&q).unwrap().quantity += buy;
                             self.assets.get_mut(&b).unwrap().quantity -= sell;
-                        } 
+                        }
                     }
                 }
                 //println!("{}TRADE COUNT: {}", self, trade_count);
