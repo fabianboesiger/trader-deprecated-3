@@ -25,7 +25,7 @@ where
         Environment {
             strategy,
             phantom: std::marker::PhantomData,
-            manager: crate::managers::Simulated::new(10.0, 0.001),
+            manager: crate::managers::Simulated::new(15.0, 0.001),
             logger: crate::loggers::Web::new(([127, 0, 0, 1], 8000)),
         }
     }
