@@ -27,14 +27,12 @@ where
         Environment {
             strategy,
             phantom: std::marker::PhantomData,
-            manager: crate::managers::Simulated::new(15.0, 0.001),
+            manager: crate::managers::Simulated::new(5.0, 0.001),
             logger: crate::loggers::Web::new(([127, 0, 0, 1], 8000)),
         }
     }
 
     pub async fn run(self) {
-        println!("start trading");
-
         let exchange: &'static Binance = Box::leak(Box::new(Binance::new(false).await));
 
         let (order_sender, order_reciever) = channel(1);
@@ -48,7 +46,7 @@ where
         let barrier = Arc::new(Barrier::new(tradable.len()));
 
         for asset in tradable {
-            let trader = Trader::new(self.strategy.clone(), Interval::ThirtyMinutes);
+            let trader = Trader::new(self.strategy.clone(), Interval::FivteenMinutes);
             let barrier = barrier.clone();
             let sender = order_sender.clone();
             let market = Market {

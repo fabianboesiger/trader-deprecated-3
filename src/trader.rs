@@ -131,8 +131,6 @@ where
             };
 
             if candlestick.live {
-                println!("send order {}", market);
-
                 sender
                     .send(Order {
                         value: Value {

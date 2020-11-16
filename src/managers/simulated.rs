@@ -78,7 +78,6 @@ impl Manager for Simulated {
         }) = receiver.recv().await
         {
             assert_eq!(value.market.quote, MAIN_ASSET);
-            println!("recieve order {}", value.market);
 
             let b = value.market.base;
             let q = value.market.quote;
