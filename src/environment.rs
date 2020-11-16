@@ -46,7 +46,7 @@ where
         let barrier = Arc::new(Barrier::new(tradable.len()));
 
         for asset in tradable {
-            let trader = Trader::new(self.strategy.clone(), Interval::FivteenMinutes);
+            let trader = Trader::new(self.strategy.clone(), Interval::ThirtyMinutes);
             let barrier = barrier.clone();
             let sender = order_sender.clone();
             let market = Market {
