@@ -70,13 +70,11 @@ where
         )
         .await
         {
-            println!("consume candlestick {}", market);
-
             let recover = !candlestick.last;
             let analysis = self.indicator.compute(&candlestick, recover);
             let current_value = candlestick.close.to_f64().unwrap();
 
-            println!("analysis {:?}", analysis);
+            println!("{} analysis {:?}", market, analysis);
 
             let mut action = self.strategy.run(analysis);
 

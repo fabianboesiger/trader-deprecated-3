@@ -39,6 +39,8 @@ impl Strategy<Indicators> for Custom {
 
             let signal = (bb_signal + rsi_signal) / 2.0;
 
+            println!("signal: {}, allowed to enter: {}", signal, self.allowed_to_enter);
+
             if signal <= -1.0 && self.allowed_to_enter {
                 self.allowed_to_enter = false;
                 return Action::Enter {
@@ -51,6 +53,7 @@ impl Strategy<Indicators> for Custom {
                     return Action::Exit;
                 }
             }
+
 
             /*
             if value > upper || rsi > 70.0 {
