@@ -19,6 +19,7 @@ pub struct Simulated {
 impl Simulated {
     pub async fn new(investment_fraction: f64, fee: f64) -> Self {
 
+        dotenv::dotenv().ok();
 
         let pool = PgPool::connect(&std::env::var("DATABASE_URL").unwrap())
             .await
