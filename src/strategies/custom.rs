@@ -46,8 +46,8 @@ impl Strategy<Indicators> for Custom {
             if value < lower && rsi < 30.0 && self.allowed_to_enter {
                 self.allowed_to_enter = false;
                 return Action::Enter {
-                    take_profit: Some(value + 2.0 * atr),
-                    stop_loss: Some(value - 2.0 * atr),
+                    take_profit: Some(value + 1.5 * atr),
+                    stop_loss: Some(value - 1.5 * atr),
                 };
             }
         }
