@@ -64,9 +64,9 @@ impl Log {
                         )
                         VALUES ($1, $2, $3, $4, $5)
                     "#,
-                    String::from(buy.asset),
+                    buy.asset.to_string(),
                     buy.quantity,
-                    String::from(sell.asset),
+                    sell.asset.to_string(),
                     sell.quantity,
                     timestamp
                 )

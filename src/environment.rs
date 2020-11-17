@@ -23,11 +23,11 @@ where
     S: Strategy<I>,
     I: Indicator,
 {
-    pub fn new(strategy: S) -> Self {
+    pub async fn new(strategy: S) -> Self {
         Environment {
             strategy,
             phantom: std::marker::PhantomData,
-            manager: crate::managers::Simulated::new(5.0, 0.001),
+            manager: crate::managers::Simulated::new(5.0, 0.001).await,
             logger: crate::loggers::Web::new(([127, 0, 0, 1], 8000)),
         }
     }

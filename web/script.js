@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", event => {
 
             rateOfProfitElem.innerText = (totalProfits / totalTrades * 100.0).toFixed(2);
             lastDayRateOfProfitElem.innerText = (lastDayProfit / lastDayTrades * 100.0).toFixed(2);
-            estimatedProfitsPerDayElem.innerText = ((totalProfits / totalTrades) * (total / 5) * (totalTrades / ((Date.now() - firstTrade) / 1000 / 60 / 60 / 24))).toFixed(4);
+            estimatedProfitsPerDayElem.innerText = ((totalProfits / totalTrades) * (total / 5.0) * (totalTrades / ((Date.now() - firstTrade) / 1000.0 / 60.0 / 60.0 / 24.0))).toFixed(4);
         }
 
 

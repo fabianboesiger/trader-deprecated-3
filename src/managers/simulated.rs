@@ -8,6 +8,7 @@ use openlimits::binance::Binance;
 use rust_decimal::prelude::*;
 use std::{collections::HashMap, fmt};
 use tokio::sync::mpsc::{Receiver, Sender};
+use sqlx::PgPool;
 
 pub struct Simulated {
     assets: HashMap<Asset, ValuedQuantity>,
@@ -16,14 +17,54 @@ pub struct Simulated {
 }
 
 impl Simulated {
-    pub fn new(investment_fraction: f64, fee: f64) -> Self {
+    pub async fn new(investment_fraction: f64, fee: f64) -> Self {
+
+
+        let pool = PgPool::connect(&std::env::var("DATABASE_URL").unwrap())
+            .await
+            .unwrap();
+
+        let db_assets: HashMap<String, Decimal> = sqlx::query!("
+                WITH
+                moves AS (
+                    SELECT
+                        buy_asset AS asset,
+                        buy_quantity AS quantity,
+                        date_time
+                    FROM trades
+                    UNION ALL
+                    SELECT
+                        sell_asset AS asset,
+                        -sell_quantity AS quantity,
+                        date_time
+                    FROM trades
+                    UNION ALL
+                    SELECT 'USDT', 1000.0, NULL
+                )
+                SELECT asset, SUM(quantity) AS quantity
+                FROM moves
+                WHERE date_time <= NOW()
+                OR date_time IS NULL
+                GROUP BY asset
+            ")
+            .fetch_all(&pool)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|row| (row.asset.unwrap(), row.quantity.unwrap()))
+            .collect();
+
+
         let mut assets = HashMap::new();
         for asset in Asset::all() {
             assets.insert(
                 asset,
                 ValuedQuantity {
                     quantity: Quantity {
-                        quantity: if asset == MAIN_ASSET {
+                        quantity: if let Some(quantity) = db_assets.get(&asset.to_string()) {
+                            *quantity
+                        } else 
+                        if asset == MAIN_ASSET {
                             Decimal::from_f32(1000.0).unwrap()
                         } else {
                             Decimal::zero()

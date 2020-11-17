@@ -20,21 +20,13 @@ macro_rules! gen_assets {
                 })
             }
         }
-
-        impl From<String> for Asset {
-            fn from(string: String) -> Asset {
-                match string.as_str() {
+        
+        impl<S: AsRef<str>> From<S> for Asset {
+            fn from(string: S) -> Asset {
+                match string.as_ref() {
                     $(stringify!($asset) => Asset::$asset),*,
                     _ => panic!()
                 }
-            }
-        }
-
-        impl From<Asset> for String {
-            fn from(asset: Asset) -> String {
-                String::from(match asset {
-                    $(Asset::$asset => stringify!($asset)),*
-                })
             }
         }
     };

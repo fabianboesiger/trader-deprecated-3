@@ -17,7 +17,7 @@ use error::Error;
 //#[tokio::main(core_threads = 1, max_threads = 1)]
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    Environment::new(strategies::Custom::new()).run().await;
+    Environment::new(strategies::Custom::new()).await.run().await;
 
     Ok(())
 }
