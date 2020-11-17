@@ -8,7 +8,8 @@ use openlimits::binance::Binance;
 use rust_decimal::prelude::*;
 use std::{collections::HashMap, fmt};
 use tokio::sync::mpsc::{Receiver, Sender};
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
+use futures::{StreamExt};
 
 pub struct Simulated {
     assets: HashMap<Asset, ValuedQuantity>,
@@ -25,7 +26,7 @@ impl Simulated {
             .await
             .unwrap();
 
-        let db_assets: HashMap<String, Decimal> = sqlx::query!("
+        let db_assets: HashMap<Asset, Decimal> = sqlx::query(r#"
                 WITH
                 moves AS (
                     SELECT
@@ -47,13 +48,17 @@ impl Simulated {
                 WHERE date_time <= NOW()
                 OR date_time IS NULL
                 GROUP BY asset
-            ")
-            .fetch_all(&pool)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(|row| (row.asset.unwrap(), row.quantity.unwrap()))
-            .collect();
+            "#)
+            .fetch(&pool)
+            .map(|row| {
+                let row = row.unwrap();
+                (
+                    row.try_get::<String, _>("asset").unwrap().into(),
+                    Decimal::from_f64(row.try_get::<f64, _>("quantity").unwrap()).unwrap()
+                )
+            })
+            .collect()
+            .await;
 
 
         let mut assets = HashMap::new();
@@ -62,7 +67,7 @@ impl Simulated {
                 asset,
                 ValuedQuantity {
                     quantity: Quantity {
-                        quantity: if let Some(quantity) = db_assets.get(&asset.to_string()) {
+                        quantity: if let Some(quantity) = db_assets.get(&asset) {
                             *quantity
                         } else 
                         if asset == MAIN_ASSET {
