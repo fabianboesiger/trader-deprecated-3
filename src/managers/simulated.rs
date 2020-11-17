@@ -8,8 +8,7 @@ use openlimits::binance::Binance;
 use rust_decimal::prelude::*;
 use std::{collections::HashMap, fmt};
 use tokio::sync::mpsc::{Receiver, Sender};
-use sqlx::{PgPool, Row};
-use futures::{StreamExt};
+use sqlx::PgPool;
 
 pub struct Simulated {
     assets: HashMap<Asset, ValuedQuantity>,
@@ -26,7 +25,7 @@ impl Simulated {
             .await
             .unwrap();
 
-        let db_assets: HashMap<Asset, Decimal> = sqlx::query(r#"
+        let db_assets: HashMap<Asset, Decimal> = sqlx::query!("
                 WITH
                 moves AS (
                     SELECT
@@ -43,22 +42,18 @@ impl Simulated {
                     UNION ALL
                     SELECT 'USDT', 1000.0, NULL
                 )
-                SELECT asset, SUM(quantity) AS quantity
+                SELECT asset, CAST(SUM(quantity) AS DOUBLE PRECISION) AS quantity
                 FROM moves
                 WHERE date_time <= NOW()
                 OR date_time IS NULL
                 GROUP BY asset
-            "#)
-            .fetch(&pool)
-            .map(|row| {
-                let row = row.unwrap();
-                (
-                    row.try_get::<String, _>("asset").unwrap().into(),
-                    Decimal::from_f64(row.try_get::<f64, _>("quantity").unwrap()).unwrap()
-                )
-            })
-            .collect()
-            .await;
+            ")
+            .fetch_all(&pool)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|row| (row.asset.unwrap().into(), Decimal::from_f64(row.quantity.unwrap()).unwrap()))
+            .collect();
 
 
         let mut assets = HashMap::new();
