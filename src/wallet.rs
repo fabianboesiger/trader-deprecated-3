@@ -218,8 +218,9 @@ impl<B: Backend> Wallet<B> {
             let quote = value.market.quote;
 
             self.trades.update_value(value);
-            self.sender.send(self.trades.render()).unwrap();
-            println!("send");
+            let rendered = self.trades.render();
+            self.sender.send(rendered).unwrap();
+            println!("send |{}|", rendered);
 
 
             let sum = self.trades.total();
