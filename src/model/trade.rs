@@ -16,9 +16,7 @@ pub struct Trades {
     pairs: Vec<(Trade, Option<Trade>)>,
     states: HashMap<Asset, State>,
     mean: f32,
-    win_cap: f32,
-    loss_cap: f32,
-    total: f32,
+    interval: f32,
 }
 
 impl Trades {
@@ -58,9 +56,7 @@ impl Trades {
             pairs: Vec::new(),
             states,
             mean: 0.0,
-            win_cap: 0.0,
-            loss_cap: 0.0,
-            total: 0.0,
+            interval: 0.0,
         }
     }
 
@@ -143,8 +139,7 @@ impl Trades {
             let loss_cap = loss_mean - 2.0 * loss_stdev;
 
             self.mean = mean;
-            self.win_cap = win_cap;
-            self.loss_cap = loss_cap;
+            self.interval = (win_cap - loss_cap) / 2.0;
         }
     }
 
@@ -193,6 +188,12 @@ impl Trades {
         let r = |x: f32| (x * 100.0).round() / 100.0;
         let rd = |x: Decimal| r(x.to_f32().unwrap());
 
+        let total = rd(self.total().quantity);
+
+        let exp = total * (1.0 + self.mean / total).powf(365.25) - total;
+        let exp_max = total * (1.0 + (self.mean + self.interval) / total).powf(365.25) - total;
+        let exp_dev = exp_max - exp;
+
         let mut string = format!(r#"
             <section>
                 <h2>Overview</h2>
@@ -221,13 +222,13 @@ impl Trades {
                         </tr>
                     </thead>
                     <tbody>"#,
-            rd(self.total().quantity),
+            r(total),
             r(self.mean),
-            r(self.win_cap.max(self.loss_cap)),
-            r(self.mean),
-            r(self.win_cap.max(self.loss_cap)),
-            r(self.mean),
-            r(self.win_cap.max(self.loss_cap)),
+            r(self.interval),
+            r(self.mean / total * 100.0),
+            r(self.interval / total * 100.0),
+            r(exp),
+            r(exp_dev),
         );
 
         for (asset, state) in self.states
