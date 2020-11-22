@@ -12,7 +12,7 @@ use rust_decimal::prelude::*;
 type Indicators = (
     Timestamp,
     Current<Value>,
-    Current<Macd<6.0, 12.0, 4.0>>,
+    Current<Macd<4.0, 8.0, 3.0>>,
     BollingerBands<20, 2.0>,
     Rsi<14>,
     Atr<14>,
