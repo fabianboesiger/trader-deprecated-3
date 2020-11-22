@@ -1,15 +1,9 @@
-use super::Value;
+use super::{Value, Action};
 use chrono::{DateTime, Utc};
-
-#[derive(Debug, Clone, Copy)]
-pub enum Side {
-    Buy,
-    Sell,
-}
 
 #[derive(Debug)]
 pub struct Order {
-    pub side: Option<Side>,
+    pub action: Action,
     pub value: Value,
     pub timestamp: DateTime<Utc>,
 }

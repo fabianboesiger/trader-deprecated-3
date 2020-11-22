@@ -1,7 +1,10 @@
 use super::{Log, Logger};
+use crate::model::{Market, Value};
 use async_trait::async_trait;
 use futures::StreamExt;
+use sqlx::PgPool;
 use std::{
+    collections::HashMap,
     net::SocketAddr,
     sync::Arc,
 };
@@ -15,7 +18,7 @@ use warp::{
 };
 
 type Senders = Arc<Mutex<Vec<Sender<Result<Message, warp::Error>>>>>;
-type Cache = Arc<RwLock<String>>;
+type Cache = Arc<RwLock<HashMap<Market, Value>>>;
 
 pub struct Web<A: Into<SocketAddr> + Send + Sync + 'static> {
     address: A,
@@ -26,17 +29,27 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Web<A> {
     pub fn new(address: A) -> Self {
         Self {
             address,
-            cache: Arc::new(RwLock::new(String::new())),
+            cache: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
 
 #[async_trait]
 impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
-    async fn run(self, mut receiver: UnboundedReceiver<String>) { 
-        let address = self.address;      
+    async fn run(self, mut receiver: UnboundedReceiver<Log>) {
+        let address = self.address;
+        
+        dotenv::dotenv().ok();
+
+        let pool = Arc::new(
+            PgPool::connect(&std::env::var("DATABASE_URL").unwrap())
+                .await
+                .unwrap(),
+        );
+        
         let senders = Arc::new(Mutex::new(Vec::new()));
 
+        let pool_clone = pool.clone();
         let senders_clone = senders.clone();
         let cache_clone = self.cache.clone();
 
@@ -44,10 +57,11 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
             .and(warp::path::end())
             .and(warp::ws())
             .and(warp::any().map(move || senders_clone.clone()))
+            .and(warp::any().map(move || pool_clone.clone()))
             .and(warp::any().map(move || cache_clone.clone()))
             .map(
-                |ws: warp::ws::Ws, senders: Senders, cache: Cache| {
-                    ws.on_upgrade(move |ws| connect(ws, senders, cache))
+                |ws: warp::ws::Ws, senders: Senders, pool: Arc<PgPool>, cache: Cache| {
+                    ws.on_upgrade(move |ws| connect(ws, senders, pool, cache))
                 },
             );
 
@@ -58,21 +72,24 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
         tokio::join! {
             async move {
                 while let Some(log) = receiver.recv().await {
-                    {
-                        let mut senders = senders.lock().await;
+                    //log.insert(&pool).await;
 
-                        let mut i: usize = 0;
-                        while i != senders.len() {
-                            if let Err(_) = senders[i].send(Ok(Message::text(&log))).await {
-                                let _removed = senders.remove(i);
-                            } else {
-                                i += 1;
-                            }
+                    if let Log::Value(value) = log {
+                        cache.write().await.insert(value.market, value);
+                    }
+
+                    let data = serde_json::to_string(&log).unwrap();
+
+                    let mut senders = senders.lock().await;
+
+                    let mut i: usize = 0;
+                    while i != senders.len() {
+                        if let Err(_) = senders[i].send(Ok(Message::text(&data))).await {
+                            let _removed = senders.remove(i);
+                        } else {
+                            i += 1;
                         }
                     }
-                    
-
-                    *cache.write().await = log;
                 }
             },
             warp::serve(routes).run(address)
@@ -80,7 +97,7 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
     }
 }
 
-async fn connect(ws: WebSocket, senders: Senders, cache: Cache) {
+async fn connect(ws: WebSocket, senders: Senders, pool: Arc<PgPool>, cache: Cache) {
     let (ws_sender, _ws_receiver) = ws.split();
     let (mut sender, receiver) = channel(16);
 
@@ -95,7 +112,6 @@ async fn connect(ws: WebSocket, senders: Senders, cache: Cache) {
         }
     }
     */
-    /*
     let values = cache.read().await;
     for (_market, value) in &*values {
         let data = serde_json::to_string(&Log::Value(*value)).unwrap();
@@ -103,9 +119,6 @@ async fn connect(ws: WebSocket, senders: Senders, cache: Cache) {
             continue;
         }
     }
-    */
-
-    sender.send(Ok(Message::text(&*cache.read().await))).await.ok();
 
     senders.lock().await.push(sender);
 }

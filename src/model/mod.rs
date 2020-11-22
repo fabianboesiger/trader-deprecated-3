@@ -7,6 +7,7 @@ mod order;
 mod quantity;
 mod value;
 mod valued_quantity;
+mod trade;
 
 pub use action::*;
 pub use asset::*;
@@ -17,3 +18,4 @@ pub use order::*;
 pub use quantity::*;
 pub use value::*;
 pub use valued_quantity::*;
+pub use trade::*;

@@ -1,6 +1,6 @@
 use crate::{
     indicators::Indicator,
-    model::{Action, Candlestick, Interval, Market, Order, Side, Value},
+    model::{Candlestick, Interval, Market, Order, Value},
     strategies::Strategy,
 };
 use futures::{stream, Stream, StreamExt};
@@ -13,11 +13,9 @@ use openlimits::binance::{
         KlineParams, KlineSummaries, Paginator,
     },
 };
-use rust_decimal::Decimal;
-use std::sync::Arc;
-use tokio::sync::{mpsc::Sender, Barrier};
+use tokio::sync::mpsc::Sender;
 use tokio::time::{timeout_at, Instant};
-
+/*
 #[derive(Copy, Clone)]
 pub enum Position {
     Long {
@@ -27,7 +25,7 @@ pub enum Position {
     },
     Short,
 }
-
+*/
 #[derive(Clone)]
 pub struct Trader<S, I>
 where
@@ -35,7 +33,6 @@ where
     S: Strategy<I>,
 {
     interval: Interval,
-    position: Position,
     indicator: I,
     strategy: S,
 }
@@ -48,7 +45,6 @@ where
     pub fn new(strategy: S, interval: Interval) -> Self {
         Trader {
             interval,
-            position: Position::Short,
             indicator: I::new(),
             strategy,
         }
@@ -59,8 +55,7 @@ where
         stream: T,
         exchange: &Binance,
         market: Market,
-        barrier: Arc<Barrier>,
-        mut sender: &mut Sender<Order>,
+        sender: &mut Sender<Order>,
     ) {
         let mut stream = Box::pin(stream);
 
@@ -76,8 +71,8 @@ where
 
             println!("{} analysis {:?}", market, analysis);
 
-            let mut action = self.strategy.run(analysis);
-
+            let action = self.strategy.run(analysis);
+            /*
             let do_exit = if let Position::Long {
                 stop_loss,
                 take_profit,
@@ -102,7 +97,8 @@ where
             if do_exit {
                 action = Action::Exit;
             }
-
+            */
+            /*
             let side = match action {
                 Action::Enter {
                     stop_loss,
@@ -130,6 +126,8 @@ where
                 Action::Hold => None,
             };
 
+            
+            */
             if candlestick.live {
                 sender
                     .send(Order {
@@ -137,7 +135,7 @@ where
                             value: candlestick.close,
                             market,
                         },
-                        side,
+                        action,
                         timestamp: candlestick.current_time,
                     })
                     .await
@@ -156,7 +154,6 @@ where
         mut self,
         exchange: &Binance,
         market: Market,
-        barrier: Arc<Barrier>,
         mut sender: Sender<Order>,
     ) {
         // Get historical data using REST API.
@@ -184,7 +181,6 @@ where
             historical_candlesticks,
             exchange,
             market,
-            barrier.clone(),
             &mut sender,
         )
         .await;
@@ -199,7 +195,12 @@ where
         loop {
             // Get live data using websocket API.
             let mut websocket = BinanceWebsocket::new();
-            websocket.subscribe(sub.clone()).await.unwrap();
+            if let Err(_) = websocket.subscribe(sub.clone()).await {
+                // Try again after 10 seconds.
+                tokio::time::delay_for(std::time::Duration::from_millis(10000)).await;
+                continue;
+            }
+
             let live_candlesticks = websocket.filter_map(|message| async move {
                 // TODO: Host computer aborts connection.
                 if let Ok(BinanceWebsocketMessage::Candlestick(candlestick)) = message {
@@ -213,7 +214,6 @@ where
                 live_candlesticks,
                 exchange,
                 market,
-                barrier.clone(),
                 &mut sender,
             )
             .await;

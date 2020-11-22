@@ -70,7 +70,7 @@ impl Mul<Value> for Quantity {
     fn mul(self, rhs: Value) -> Self::Output {
         assert_eq!(self.asset, rhs.market.base);
         Self::Output {
-            quantity: self.quantity * rhs.value,
+            quantity: (self.quantity * rhs.value).round_dp(8),
             asset: rhs.market.quote,
         }
     }
@@ -82,7 +82,7 @@ impl Div<Value> for Quantity {
     fn div(self, rhs: Value) -> Self::Output {
         assert_eq!(self.asset, rhs.market.quote);
         Quantity {
-            quantity: self.quantity / rhs.value,
+            quantity: (self.quantity / rhs.value).round_dp(8),
             asset: rhs.market.base,
         }
     }
@@ -93,7 +93,7 @@ impl Mul<Decimal> for Quantity {
 
     fn mul(self, rhs: Decimal) -> Self::Output {
         Self::Output {
-            quantity: self.quantity * rhs,
+            quantity: (self.quantity * rhs).round_dp(8),
             asset: self.asset,
         }
     }
@@ -104,7 +104,7 @@ impl Div<Decimal> for Quantity {
 
     fn div(self, rhs: Decimal) -> Self::Output {
         Self::Output {
-            quantity: self.quantity / rhs,
+            quantity: (self.quantity / rhs).round_dp(8),
             asset: self.asset,
         }
     }

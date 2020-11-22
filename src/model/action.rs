@@ -1,9 +1,11 @@
 use super::{Asset, Value};
+use rust_decimal::Decimal;
 
+#[derive(Debug)]
 pub enum Action {
     Enter {
-        stop_loss: Option<f64>,
-        take_profit: Option<f64>,
+        stop_loss: Option<Decimal>,
+        take_profit: Option<Decimal>,
     },
     Exit,
     Hold,

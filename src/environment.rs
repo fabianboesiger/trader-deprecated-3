@@ -1,33 +1,36 @@
-use crate::model::{Asset, Interval, Market, MAIN_ASSET};
 use crate::{
-    indicators::Indicator, loggers::Logger, managers::Manager, strategies::Strategy, trader::Trader,
+    wallet::Wallet,
+    model::{Asset, Interval, Market, MAIN_ASSET},
+    backends::Backend,
+    indicators::Indicator, loggers::Logger, strategies::Strategy, trader::Trader,
 };
 use openlimits::binance::Binance;
-use std::sync::Arc;
-use tokio::sync::{mpsc::channel, Barrier};
+use tokio::sync::mpsc::{channel, unbounded_channel};
 use tokio::task;
 
-pub struct Environment<S, I>
+pub struct Environment<B, S, I>
 where
     S: Strategy<I>,
+    B: Backend,
     I: Indicator,
 {
-    strategy: S,
+    backend: std::marker::PhantomData<B>,
+    strategy: std::marker::PhantomData<S>,
     phantom: std::marker::PhantomData<I>,
-    manager: crate::managers::Simulated,
     logger: crate::loggers::Web<([u8; 4], u16)>,
 }
 
-impl<S, I> Environment<S, I>
+impl<B, S, I> Environment<B, S, I>
 where
     S: Strategy<I>,
+    B: Backend,
     I: Indicator,
 {
-    pub async fn new(strategy: S) -> Self {
+    pub async fn new() -> Self {
         Environment {
-            strategy,
+            strategy: std::marker::PhantomData,
+            backend: std::marker::PhantomData,
             phantom: std::marker::PhantomData,
-            manager: crate::managers::Simulated::new(5.0, 0.001).await,
             logger: crate::loggers::Web::new(([127, 0, 0, 1], 8000)),
         }
     }
@@ -35,19 +38,16 @@ where
     pub async fn run(self) {
         let exchange: &'static Binance = Box::leak(Box::new(Binance::new(false).await));
 
-        let (order_sender, order_reciever) = channel(1);
-        let (message_sender, message_reciever) = channel(16);
+        let (order_sender, order_reciever) = channel(16);
+        let (log_sender, log_receiver) = unbounded_channel();
 
         let tradable = Asset::all()
             .into_iter()
             .filter(|asset| *asset != MAIN_ASSET)
             .collect::<Vec<Asset>>();
 
-        let barrier = Arc::new(Barrier::new(tradable.len()));
-
         for asset in tradable {
-            let trader = Trader::new(self.strategy.clone(), Interval::ThirtyMinutes);
-            let barrier = barrier.clone();
+            let trader = Trader::new(S::new(), Interval::ThirtyMinutes);
             let sender = order_sender.clone();
             let market = Market {
                 base: asset,
@@ -55,13 +55,13 @@ where
             };
 
             task::spawn(async move {
-                trader.run(exchange, market, barrier, sender).await;
+                trader.run(exchange, market, sender).await;
             });
         }
 
         tokio::join! {
-            self.manager.run(exchange, order_reciever, message_sender),
-            self.logger.run(message_reciever)
+            Wallet::<B>::new(log_sender).await.run(exchange, order_reciever),
+            self.logger.run(log_receiver)
         };
     }
 }

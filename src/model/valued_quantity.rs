@@ -1,20 +1,21 @@
 use super::{Quantity, Value};
 use std::fmt;
+use serde::Serialize;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize)]
 pub struct ValuedQuantity {
     pub quantity: Quantity,
     pub value: Value,
 }
 
 impl ValuedQuantity {
-    pub fn get_quantity_value(&self) -> Quantity {
+    pub fn get_value_quantity(&self) -> Quantity {
         self.quantity * self.value
     }
 }
 
 impl fmt::Display for ValuedQuantity {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} = {}", self.quantity, self.get_quantity_value())
+        write!(f, "{} = {}", self.quantity, self.get_value_quantity())
     }
 }

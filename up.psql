@@ -1,26 +1,92 @@
 CREATE TABLE trades (
-    buy_asset VARCHAR(8),
-    buy_quantity NUMERIC NOT NULL,
-    sell_asset VARCHAR(8),
-    sell_quantity NUMERIC NOT NULL,
+    base_asset VARCHAR(8),
+    base_quantity NUMERIC NOT NULL,
+    quote_asset VARCHAR(8),
+    quote_quantity NUMERIC NOT NULL,
     date_time TIMESTAMP WITH TIME ZONE,
-    PRIMARY KEY (buy_asset, sell_asset, date_time)
+    market_value NUMERIC NOT NULL,
+    is_long BOOLEAN NOT NULL,
+    take_profit NUMERIC,
+    stop_loss NUMERIC,
+    PRIMARY KEY (base_asset, quote_asset, date_time)
 );
 
 /* Get quantities of all assets.
 WITH
-moves AS (
+all_moves AS (
     SELECT
-        buy_asset AS asset,
-        buy_quantity AS quantity,
+        base_asset AS asset,
+        base_quantity AS quantity,
         date_time
     FROM trades
+    WHERE is_long
 	UNION ALL
 	SELECT
-        sell_asset AS asset,
-        -sell_quantity AS quantity,
+        base_asset AS asset,
+        -base_quantity AS quantity,
+        date_time
+        NULL,
+    FROM trades
+    WHERE NOT is_long
+	UNION ALL
+	SELECT
+        'USDT',
+        1000.0,
+        NULL
+),
+last_moves AS (
+    SELECT
+        base_asset AS asset,
+        stop_loss,
+        take_profit,
+        ROW_NUMBER() OVER (
+            PARTITION BY base_asset
+            ORDER BY date_time DESC
+        ) AS row_number
+    FROM trades
+    WHERE row_number = 1
+),
+summed_moves AS (
+    SELECT asset, SUM(quantity) AS quantity
+    FROM moves
+    WHERE date_time <= NOW()
+    OR date_time IS NULL
+    GROUP BY asset
+)
+SELECT
+    asset,
+    quantity,
+    date_time,
+    stop_loss,
+    take_profit
+FROM summed_moves
+LEFT JOIN last_moves
+USING (asset)
+*/
+
+
+/* Get quantities of all assets.
+SELECT base_asset AS asset, take_profit, stop_loss
+FROM trades
+AND is_long
+ORDER BY date_time DESC
+*/
+
+WITH
+moves AS (
+    SELECT
+        base_asset AS asset,
+        base_quantity AS quantity,
         date_time
     FROM trades
+    WHERE is_long
+	UNION ALL
+	SELECT
+        base_asset AS asset,
+        -base_quantity AS quantity,
+        date_time
+    FROM trades
+    WHERE NOT is_long
 	UNION ALL
 	SELECT 'USDT', 1000.0, NULL
 )
@@ -29,4 +95,3 @@ FROM moves
 WHERE date_time <= NOW()
 OR date_time IS NULL
 GROUP BY asset
-*/

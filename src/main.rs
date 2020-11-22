@@ -6,18 +6,21 @@ mod environment;
 mod error;
 mod indicators;
 mod loggers;
-mod managers;
+mod backends;
 mod model;
 mod strategies;
 mod trader;
+mod wallet;
 
 use environment::Environment;
 use error::Error;
+use backends::Simulated;
+use strategies::Custom;
 
 //#[tokio::main(core_threads = 1, max_threads = 1)]
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    Environment::new(strategies::Custom::new()).await.run().await;
+    Environment::<Simulated, Custom, _>::new().await.run().await;
 
     Ok(())
 }

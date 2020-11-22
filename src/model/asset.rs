@@ -107,4 +107,10 @@ gen_assets! {
     SOL,
     LINKUP,
     LINKDOWN,
+    ROSE,
+    ANKR,
+    COMP,
+    BAL,
+    UNFI,
+    TOMO,
 }

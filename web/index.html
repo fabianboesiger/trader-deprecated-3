@@ -5,8 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Trader</title>
         <link rel="stylesheet" href="style.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
-        <script src="script.js"></script>
     </head>
     <body>
         <header>
@@ -19,52 +17,41 @@
         </header>
         <main>
             <section>
-                <h2>Equity</h2>
-                <h3>Stats</h3>
-                <p>Equity: <span id="total"></span> USDT</p>
-                <p>Estimated Profits per Day: <span id="estimated-profits"></span> USDT</p>
-                <p>Average Rate of Profit per Trade: <span id="rate-of-profit"></span>%</p>
-                <p>Last Day Rate of Profit per Trade: <span id="last-day-rate-of-profit"></span>%</p>
-                <h3>Equity over Time</h3>
-                <canvas id="chart-equity"></canvas>
-            </section>
-            <section>
-                <h2>Investments</h2>
-                <h3>Rate of Profit per Asset</h3>
-                <canvas id="chart-asset-profits"></canvas>
-                <h3>Current Investments</h3>
-                <table id="assets">
-                    <thead>
-                        <tr>
-                            <th class="asset">Asset</th>
-                            <th class="quantity">Quantity</th>
-                            <!--<th class="value">Value</th>-->
-                            <th class="usdt">USDT</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
+                <h2>Overview</h2>
+                <table>
+                    <tr><th>Equity</th><td><span id="equity">1000</span> USDT</td></tr>
+                    <tr><th>Daily Profit</th><td><span id="profit">10±4</span> USDT/day <sup>1</sup></td></tr>
+                    <tr><th>Daily Profit Percentage</th><td><span id="percentage">10±4</span> %/day <sup>1</sup></td></tr>
+                    <tr><th>Expected Next Year Profit</th><td><span id="yearly">10±4</span> USDT <sup>1, 2</sup></td></tr>
                 </table>
+                <p>
+                    <sup>1</sup> Assuming normal distribution of profits, confidence interval 2σ.<br/>
+                    <sup>2</sup> Assuming exponential growth model.
+                </p>
             </section>
             <section>
-                <h2>Trades</h2>
-                <h3>Win-Loss Ratio</h3>
-                <div class="shrink">
-                    <canvas id="chart-win-loss"></canvas>
-                    <canvas id="chart-win-loss-profits"></canvas>
-                </div>
-                <h3>Rate of Profit over Time</h3>
-                <canvas id="chart-profit-per-trade"></canvas>
-                <h3>All Trades</h3>
-                <table id="trades" class="scrollable">
+                <h2>Positions</h2>
+                <table>
                     <thead>
                         <tr>
-                            <th class="timestamp">Time</th>
-                            <th class="asset">Asset</th>
-                            <th class="quantity">Quantity</th>
-                            <th class="usdt">USDT</th>
+                            <th>Market</th>
+                            <th>Value</th>
+                            <th>Position</th>
+                            <th>Stop Loss</th>
+                            <th>Take Profit</th>
+                            <th>USDT</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        <tr id="BTC">
+                            <td>BTC</td>
+                            <td>17000</td>
+                            <td>LONG</td>
+                            <td>16000</td>
+                            <td>18000</td>
+                            <td>200</td>
+                        </tr>
+                    </tbody>
                 </table>
             </section>
         </main>

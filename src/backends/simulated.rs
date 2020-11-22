@@ -1,7 +1,7 @@
-use super::Manager;
+use super::{Exchange, Backend};
 use crate::{
     loggers::Log,
-    model::{Asset, Market, Order, Quantity, Side, Value, ValuedQuantity, MAIN_ASSET},
+    model::{Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET},
 };
 use async_trait::async_trait;
 use openlimits::binance::Binance;
@@ -10,6 +10,7 @@ use std::{collections::HashMap, fmt};
 use tokio::sync::mpsc::{Receiver, Sender};
 use sqlx::PgPool;
 
+/*
 pub struct Simulated {
     assets: HashMap<Asset, ValuedQuantity>,
     fee: Decimal,
@@ -194,5 +195,25 @@ impl fmt::Display for Simulated {
         }
 
         writeln!(f, "TOTAL: {}", self.total())
+    }
+}
+*/
+
+pub struct Simulated {
+
+}
+
+#[async_trait]
+impl Backend for Simulated {
+    fn new() -> Self {
+        Simulated {}
+    }
+
+    async fn buy(self, exchange: &Binance) {
+
+    }
+
+    async fn sell(self, exchange: &Binance) {
+
     }
 }

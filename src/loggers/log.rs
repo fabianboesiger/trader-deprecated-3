@@ -1,10 +1,7 @@
-use crate::model::{Quantity, Value};
-use chrono::{DateTime, Utc};
-use futures::{Stream, StreamExt};
-use rust_decimal::prelude::*;
+use crate::model::{Trade, Value};
+use crate::wallet::State;
 use serde::Serialize;
-use sqlx::{PgPool, Row};
-
+/*
 #[derive(Debug, Serialize)]
 pub enum Log {
     Trade {
@@ -14,7 +11,17 @@ pub enum Log {
     },
     Value(Value),
 }
+*/
 
+#[derive(Debug, Serialize)]
+pub enum Log {
+    // Update just a value.
+    Value(Value),
+    // Update the entire asset state.
+    State(State),
+}
+
+/*
 impl Log {
     /*
     pub async fn select_assets_at(pool: &PgPool, timestamp: DateTime<Utc>) -> Vec<Message> {
@@ -46,6 +53,7 @@ impl Log {
         .unwrap()
     }
     */
+    /*
     pub async fn insert(&self, pool: &PgPool) {
         match self {
             Log::Trade {
@@ -77,7 +85,7 @@ impl Log {
             _ => {}
         }
     }
-
+    */
     pub fn select_all_trades(pool: &PgPool) -> impl Stream<Item = Result<Log, sqlx::Error>> {
         // TODO: Fix casting as soon as https://github.com/launchbadge/sqlx/issues/666 is fixed.
         sqlx::query(
@@ -124,3 +132,4 @@ impl Log {
         })
     }
 }
+*/

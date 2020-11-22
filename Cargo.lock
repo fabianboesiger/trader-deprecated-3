@@ -2514,6 +2514,7 @@ dependencies = [
  "stft",
  "tokio",
  "warp",
+ "z_table",
 ]
 
 [[package]]
@@ -2873,6 +2874,12 @@ dependencies = [
  "winapi 0.2.8",
  "winapi-build",
 ]
+
+[[package]]
+name = "z_table"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b48cb369068730c01fd68e933f17767ae2f337871ae63df494966cab899e6bd1"
 
 [[package]]
 name = "zeroize"
