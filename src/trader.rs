@@ -69,7 +69,7 @@ where
             let analysis = self.indicator.compute(&candlestick, recover);
             let current_value = candlestick.close.to_f64().unwrap();
 
-            println!("{} analysis {:?}", market, analysis);
+            //println!("{} analysis {:?}", market, analysis);
 
             let action = self.strategy.run(analysis);
             /*

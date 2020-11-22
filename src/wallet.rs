@@ -219,6 +219,8 @@ impl<B: Backend> Wallet<B> {
 
             self.trades.update_value(value);
             self.sender.send(self.trades.render()).unwrap();
+            println!("send");
+
 
             let sum = self.trades.total();
 
