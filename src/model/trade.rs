@@ -126,19 +126,21 @@ impl Trades {
             .map(|diff| diff.to_f32().unwrap())
             .partition(|diff| *diff >= 0.0);
         
-        if wins.len() + losses.len() > 0 {
+        if wins.len() > 0 && losses.len() > 0 {
             let win_ratio = wins.len() as f32 / (wins.len() + losses.len()) as f32;
 
             let (win_mean, win_stdev) = Self::compute_mean_stdev(wins);
             let (loss_mean, loss_stdev) = Self::compute_mean_stdev(losses);
         
             let mean = win_ratio * win_mean + (1.0 - win_ratio) * loss_mean;
+            /*
             let win_p = (p - (1.0 - win_ratio)) / win_ratio;
             let loss_p = (p - win_ratio) / (1.0 - win_ratio);
             let win_z = z_table::reverse_lookup(win_p);
             let loss_z = z_table::reverse_lookup(loss_p);
-            let win_cap = win_mean + win_z * win_stdev;
-            let loss_cap = loss_mean - loss_z * loss_stdev;
+            */
+            let win_cap = win_mean + 2.0 * win_stdev;
+            let loss_cap = loss_mean - 2.0 * loss_stdev;
 
             self.mean = mean;
             self.win_cap = win_cap;
