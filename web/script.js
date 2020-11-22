@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", event => {
     ws.onopen = function() {}
 
     ws.onmessage = function(message) {
-	console.log(message);
+        console.log(message);
         main.innerHTML = message.data;
     };
 });

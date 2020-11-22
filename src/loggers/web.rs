@@ -58,7 +58,7 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
         tokio::join! {
             async move {
                 while let Some(log) = receiver.recv().await {
-                    println!("recv");
+                    println!("recv {}", log);
                     {
                         let mut senders = senders.lock().await;
 
