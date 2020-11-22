@@ -186,6 +186,7 @@ impl<B: Backend> Wallet<B> {
 
         let mut trades = Trades::new().await;
         trades.fetch_all().await;
+        sender.send(trades.render()).unwrap();
 
         Self {
             trades: Trades::new().await,
@@ -293,10 +294,7 @@ impl<B: Backend> Wallet<B> {
                     
                 },
                 Action::Exit => {
-                    if let Position::Long {
-                        stop_loss,
-                        take_profit,
-                    } = self.trades.get_position(&base) {
+                    if let Position::Long {..} = self.trades.get_position(&base) {
                         let quantity = self.trades.get_quantity(&base);
                         if !quantity.is_zero() {
                             let buy = quantity * value * (Decimal::one() - Decimal::from_f64(FEE).unwrap());
