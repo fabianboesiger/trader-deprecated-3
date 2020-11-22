@@ -88,28 +88,28 @@ impl Trades {
     fn apply_trade(&mut self, trade: Trade) {
         // Update states.
         if let Position::Short = trade.position {
-           self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity -= trade.base;
-           self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity += trade.quote;
-       } else {
-        self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity += trade.base;
-        self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity -= trade.quote;
-       }
-       self.states.get_mut(&trade.base.asset).unwrap().position = trade.position;
+            self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity -= trade.base;
+            self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity += trade.quote;
+        } else {
+            self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity += trade.base;
+            self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity -= trade.quote;
+        }
+        self.states.get_mut(&trade.base.asset).unwrap().position = trade.position;
 
-       let i = self.pairs
-           .iter()
-           .enumerate()
-           .filter(|(_, (long, short))| (*long).base.asset == trade.base.asset && short.is_none())
-           .map(|(i, _)| i)
-           .next();
+        let i = self.pairs
+            .iter()
+            .enumerate()
+            .filter(|(_, (long, short))| (*long).base.asset == trade.base.asset && short.is_none())
+            .map(|(i, _)| i)
+            .next();
        
-       if let Some(i) = i {
-           self.pairs[i].1 = Some(trade);
-       } else {
-           self.pairs.push((trade, None));
-       }
+        if let Some(i) = i {
+            self.pairs[i].1 = Some(trade);
+        } else {
+            self.pairs.push((trade, None));
+        }
 
-       self.update_stats();
+        self.update_stats();
     }
 
     fn update_stats(&mut self) {

@@ -81,7 +81,6 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
 }
 
 async fn connect(ws: WebSocket, senders: Senders, cache: Cache) {
-    println!("conn");
 
     let (ws_sender, _ws_receiver) = ws.split();
     let (mut sender, receiver) = channel(16);
