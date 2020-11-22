@@ -267,6 +267,8 @@ impl Trades {
                 </table>
             </section>
         "#).as_str();
+
+        println!("{}", string);
         
         string
     }
