@@ -6,6 +6,7 @@ mod current;
 mod obv;
 mod rsi;
 mod tr;
+mod timestamp;
 
 pub use atr::*;
 pub use bollinger_bands::*;
@@ -13,6 +14,7 @@ pub use current::*;
 pub use obv::*;
 pub use rsi::*;
 pub use tr::*;
+pub use timestamp::*;
 
 use crate::model::Candlestick;
 use std::fmt::Debug;
