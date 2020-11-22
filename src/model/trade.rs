@@ -268,7 +268,7 @@ impl Trades {
             </section>
         "#).as_str();
 
-        println!("{}", string);
+        println!("x{}x", string);
         
         string
     }
