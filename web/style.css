@@ -11,7 +11,7 @@ html {
 body {
     margin: auto;
     padding: 8px;
-    max-width: 768px;
+    max-width: 512px;
 }
 
 a {
@@ -26,7 +26,8 @@ td, th {
 }
 
 table {
-    margin: auto;
+    width: 100%;
     border-collapse: collapse;
+    font-family: monospace;
 }
 

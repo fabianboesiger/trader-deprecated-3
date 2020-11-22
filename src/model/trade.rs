@@ -230,7 +230,14 @@ impl Trades {
             r(self.win_cap.max(self.loss_cap)),
         );
 
-        for (asset, state) in &self.states {
+        for (asset, state) in self.states
+            .iter()
+            .filter(|(_, state)| if let Position::Short = state.position {
+                false
+            } else {
+                true
+            })
+        {
             let (position, stop_loss, take_profit) = if let Position::Long {
                 stop_loss,
                 take_profit,
@@ -258,7 +265,7 @@ impl Trades {
                 position,
                 stop_loss,
                 take_profit,
-                rd(state.valued_quantity.quantity.quantity),
+                rd(state.valued_quantity.get_value_quantity()),
             ).as_str();
         }
         
