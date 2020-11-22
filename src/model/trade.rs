@@ -265,7 +265,7 @@ impl Trades {
                 position,
                 stop_loss,
                 take_profit,
-                rd(state.valued_quantity.get_value_quantity()),
+                rd(state.valued_quantity.get_value_quantity().quantity),
             ).as_str();
         }
         
