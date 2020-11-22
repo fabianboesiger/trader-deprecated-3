@@ -2,7 +2,7 @@ use super::Strategy;
 use crate::{
     indicators::{
         series::{Macd, Value},
-        Atr, BollingerBands, Current, Indicator, Rsi,
+        Atr, BollingerBands, Current, Indicator, Rsi, Timestamp
     },
     model::Action,
 };
@@ -10,6 +10,7 @@ use chrono::{DateTime, Utc, NaiveDateTime, Duration};
 use rust_decimal::prelude::*;
 
 type Indicators = (
+    Timestamp,
     Current<Value>,
     Current<Macd<6.0, 12.0, 4.0>>,
     BollingerBands<20, 2.0>,
@@ -35,6 +36,7 @@ impl Strategy<Indicators> for Custom {
 
     fn run(&mut self, analysis: Option<<Indicators as Indicator>::Analysis>) -> Action {
         if let Some((
+            now,
             value,
             (_macd, _signal, _histogram),
             (upper, lower),
@@ -46,8 +48,6 @@ impl Strategy<Indicators> for Custom {
                 self.allowed_to_enter = true;
                 return Action::Exit;
             }
-
-            let now = Utc::now();
 
             if value < lower {
                 self.bb_breakthrough = now;
