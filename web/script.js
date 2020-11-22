@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", event => {
-    let main = document.getElementsByTagName("main");
+    let main = document.getElementsByTagName("main")[0];
 
     let uri = "ws://" + location.host + "/socket";
     let ws = new WebSocket(uri);
