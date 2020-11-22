@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Trader</title>
         <link rel="stylesheet" href="style.css">
+        <script src="script.js"></script>
     </head>
     <body>
         <header>
@@ -16,44 +17,6 @@
             </p>
         </header>
         <main>
-            <section>
-                <h2>Overview</h2>
-                <table>
-                    <tr><th>Equity</th><td><span id="equity">1000</span> USDT</td></tr>
-                    <tr><th>Daily Profit</th><td><span id="profit">10±4</span> USDT/day <sup>1</sup></td></tr>
-                    <tr><th>Daily Profit Percentage</th><td><span id="percentage">10±4</span> %/day <sup>1</sup></td></tr>
-                    <tr><th>Expected Next Year Profit</th><td><span id="yearly">10±4</span> USDT <sup>1, 2</sup></td></tr>
-                </table>
-                <p>
-                    <sup>1</sup> Assuming normal distribution of profits, confidence interval 2σ.<br/>
-                    <sup>2</sup> Assuming exponential growth model.
-                </p>
-            </section>
-            <section>
-                <h2>Positions</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Market</th>
-                            <th>Value</th>
-                            <th>Position</th>
-                            <th>Stop Loss</th>
-                            <th>Take Profit</th>
-                            <th>USDT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr id="BTC">
-                            <td>BTC</td>
-                            <td>17000</td>
-                            <td>LONG</td>
-                            <td>16000</td>
-                            <td>18000</td>
-                            <td>200</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
         </main>
         <footer>
             <p>
