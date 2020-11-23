@@ -59,6 +59,7 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
             async move {
                 while let Some(log) = receiver.recv().await {
                     {
+                        println!("{:?}", log);
                         let mut senders = senders.lock().await;
 
                         let mut i: usize = 0;

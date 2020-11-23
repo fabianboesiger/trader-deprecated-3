@@ -86,8 +86,6 @@ impl Trades {
 
     
     fn apply_trade(&mut self, trade: Trade) {
-        println!("apply trade {:#?}", trade);
-
         // Update states.
         if let Position::Short = trade.position {
             self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity -= trade.base;
@@ -97,10 +95,6 @@ impl Trades {
             self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity -= trade.quote;
         }
         self.states.get_mut(&trade.base.asset).unwrap().position = trade.position;
-
-        println!("base {:#?}", self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity);
-        println!("quote {:#?}", self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity);
-
 
         let i = self.pairs
             .iter()
