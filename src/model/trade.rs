@@ -231,9 +231,9 @@ impl Trades {
         let (mean, interval) = (mean * trades_per_day, interval);
 
 
-        let exp = total * (1.0 + mean / total).powf(365.25) - total;
-        let exp_max = total * (1.0 + (mean + interval) / total).powf(365.25) - total;
-        let exp_dev = exp_max - exp;
+        //let exp = total * (1.0 + mean / total).powf(365.25) - total;
+        //let exp_max = total * (1.0 + (mean + interval) / total).powf(365.25) - total;
+        //let exp_dev = exp_max - exp;
 
         let mut string = format!(r#"
             <section>
@@ -242,11 +242,10 @@ impl Trades {
                     <tr><th>Equity</th><td><span id="equity">{}</span> USDT</td></tr>
                     <tr><th>Daily Profit</th><td><span id="profit">{}±{}</span> USDT/day <sup>1</sup></td></tr>
                     <tr><th>Daily Profit Percentage</th><td><span id="percentage">{}±{}</span> %/day <sup>1</sup></td></tr>
-                    <tr><th>Expected Next Year Profit</th><td><span id="yearly">{}±{}</span> USDT <sup>1, 2</sup></td></tr>
+                    <tr><th>Trades per Day</th><td><span id="trades">{}</span></td></tr>
                 </table>
                 <p>
                     <sup>1</sup> Assuming normal distribution of profits, confidence interval 2σ.<br/>
-                    <sup>2</sup> Assuming exponential growth model.
                 </p>
             </section>
             <section>
@@ -268,8 +267,7 @@ impl Trades {
             r(interval),
             r(mean / total * 100.0),
             r(interval / total * 100.0),
-            r(exp),
-            r(exp_dev),
+            r(trades_per_day),
         );
 
         for (asset, state) in self.states
