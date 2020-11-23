@@ -148,8 +148,8 @@ impl Trades {
     }
 
     pub fn render(&self) -> String {
-        const p: f32 = 0.99;
-        const z: f32 = z_table::reverse_lookup(p);
+        const P: f32 = 0.99;
+        const Z: f32 = z_table::reverse_lookup(P);
 
         let r = |x: f32| (x * 100.0).round() / 100.0;
         let rd = |x: Decimal| r(x.to_f32().unwrap());
@@ -214,15 +214,15 @@ impl Trades {
             let mean = win_ratio * win_mean + (1.0 - win_ratio) * loss_mean;
 
             if w > 0 && l == 0 {
-                let win_cap = win_mean + z * win_stdev;
+                let win_cap = win_mean + Z * win_stdev;
                 (mean, win_cap - mean)
             } else
             if l > 0 && w == 0  {
-                let loss_cap = loss_mean - z * loss_stdev;
+                let loss_cap = loss_mean - Z * loss_stdev;
                 (mean, mean - loss_cap)
             } else {
-                let win_cap = win_mean + z * win_stdev;
-                let loss_cap = loss_mean - z * loss_stdev;
+                let win_cap = win_mean + Z * win_stdev;
+                let loss_cap = loss_mean - Z * loss_stdev;
                 (mean, (win_cap - mean).max(mean - loss_cap))
             }
         } else {
@@ -271,13 +271,24 @@ impl Trades {
             r(trades_per_day),
         );
 
-        for (asset, state) in self.states
+        let mut states = self.states
+            .iter()
+            .collect::<Vec<(&Asset, &State)>>();
+
+        states.sort_by(|(a1, s1), (a2, s2)| 
+            s1.valued_quantity.get_value_quantity().quantity
+                .cmp(&s2.valued_quantity.get_value_quantity().quantity)
+        );
+
+        for (asset, state) in states 
+            /*
             .iter()
             .filter(|(_, state)| if let Position::Short = state.position {
                 false
             } else {
                 true
             })
+            */
         {
             let (position, stop_loss, take_profit) = if let Position::Long {
                 stop_loss,
