@@ -185,7 +185,7 @@ impl Trades {
         let (wins, losses): (Vec<f32>, Vec<f32>) = self.pairs
             .iter()
             .filter(|(_, short)| short.is_some())
-            .map(|(long, short)| long.base.quantity - short.as_ref().unwrap().base.quantity)
+            .map(|(long, short)| long.quote.quantity - short.as_ref().unwrap().quote.quantity)
             .map(|diff| diff.to_f32().unwrap())
             .partition(|diff| *diff >= 0.0);
 
