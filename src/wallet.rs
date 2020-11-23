@@ -189,7 +189,7 @@ impl<B: Backend> Wallet<B> {
         sender.send(trades.render()).unwrap();
 
         Self {
-            trades: Trades::new().await,
+            trades,
             backend: std::marker::PhantomData,
             sender,
         }

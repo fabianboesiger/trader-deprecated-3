@@ -181,9 +181,6 @@ impl Trades {
             sum += state.valued_quantity.get_value_quantity();
         }
 
-        println!("USDT: {}", self.states.get(&MAIN_ASSET).unwrap().valued_quantity.quantity);
-        println!("total: {}", sum);
-
         sum
     }
 
