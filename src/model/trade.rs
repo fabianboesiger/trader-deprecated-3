@@ -173,7 +173,7 @@ impl Trades {
 
             let completed = self.pairs
                 .iter()
-                .filter(|(long, short)| short.is_some())
+                .filter(|(_, short)| short.is_some())
                 .count();
 
             completed as f32 / days
@@ -198,11 +198,15 @@ impl Trades {
             (0.0, 0.0)
         };
 
+        println!("win {} {}", win_mean, win_stdev);
+
         let (loss_mean, loss_stdev) = if losses.len() > 0 {
             Self::compute_mean_stdev(losses)
         } else {
             (0.0, 0.0)
         };
+
+        println!("win {} {}", loss_mean, loss_stdev);
         
         let (mean, interval) = if w + l > 0 {
             let win_ratio = w as f32 / (w + l) as f32;
@@ -223,6 +227,8 @@ impl Trades {
         } else {
             (0.0, 0.0)
         };
+
+        let (mean, interval) = (mean * trades_per_day, interval);
 
 
         let exp = total * (1.0 + mean / total).powf(365.25) - total;
