@@ -58,8 +58,8 @@ impl Strategy<Indicators> for Custom {
             }
 
             if 
-                now - self.bb_breakthrough <= Duration::hours(2) &&
-                now - self.rsi_breakthrough <= Duration::hours(2) &&
+                now - self.bb_breakthrough <= Duration::hours(3) &&
+                now - self.rsi_breakthrough <= Duration::hours(3) &&
                 self.allowed_to_enter
             {
                 self.allowed_to_enter = false;

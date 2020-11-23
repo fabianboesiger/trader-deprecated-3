@@ -185,7 +185,7 @@ impl Trades {
         let (wins, losses): (Vec<f32>, Vec<f32>) = self.pairs
             .iter()
             .filter(|(_, short)| short.is_some())
-            .map(|(long, short)| short.as_ref().unwrap().quote.quantity - long.quote.quantity)
+            .map(|(long, short)| (short.as_ref().unwrap().quote.quantity - long.quote.quantity) / long.quote.quantity)
             .map(|diff| diff.to_f32().unwrap())
             .partition(|diff| *diff >= 0.0);
 
@@ -261,10 +261,10 @@ impl Trades {
                     </thead>
                     <tbody>"#,
             r(total),
-            r(mean),
-            r(interval),
-            r(mean / total * 100.0),
-            r(interval / total * 100.0),
+            r(mean * trades_per_day * 0.2 * total),
+            r(interval * trades_per_day * 0.2 * total),
+            r(mean * trades_per_day * 0.2 * 100.0),
+            r(interval  * trades_per_day * 0.2 * 100.0),
             r(trades_per_day),
         );
 

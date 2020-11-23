@@ -60,7 +60,7 @@ where
         let mut stream = Box::pin(stream);
 
         while let Ok(Some(candlestick)) = timeout_at(
-            Instant::now() + std::time::Duration::from_secs(180),
+            Instant::now() + std::time::Duration::from_secs(300),
             stream.next(),
         )
         .await
