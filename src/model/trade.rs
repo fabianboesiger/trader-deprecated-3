@@ -238,9 +238,9 @@ impl Trades {
                 <h2>Overview</h2>
                 <table>
                     <tr><th>Equity</th><td><span id="equity">{}</span> USDT</td></tr>
-                    <tr><th>Daily Profit</th><td><span id="profit">{}±{}</span> USDT/day <sup>1</sup></td></tr>
+                    <tr><th>Estimated Daily Profit</th><td><span id="profit">{}±{}</span> USDT/day <sup>1</sup></td></tr>
                     <tr><th>Daily Profit Percentage</th><td><span id="percentage">{}±{}</span> %/day <sup>1</sup></td></tr>
-                    <tr><th>Trades per Day</th><td><span id="trades">{}</span></td></tr>
+                    <tr><th>Average Trades per Day</th><td><span id="trades">{}</span></td></tr>
                 </table>
                 <p>
                     <sup>1</sup> Assuming normal distribution of profits, confidence interval 2σ.<br/>
@@ -261,10 +261,10 @@ impl Trades {
                     </thead>
                     <tbody>"#,
             r(total),
-            r(mean * trades_per_day * 0.2 * total),
-            r(interval * trades_per_day * 0.2 * total),
-            r(mean * trades_per_day * 0.2 * 100.0),
-            r(interval  * trades_per_day * 0.2 * 100.0),
+            r(mean * 0.2 * total),
+            r(interval * 0.2 * total),
+            r(mean * 0.2 * 100.0),
+            r(interval * 0.2 * 100.0),
             r(trades_per_day),
         );
 
