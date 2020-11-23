@@ -189,8 +189,6 @@ impl Trades {
             .map(|diff| diff.to_f32().unwrap())
             .partition(|diff| *diff >= 0.0);
 
-        println!("wins {:?}\nlosses {:?}", wins, losses);
-
         let w = wins.len();
         let l = losses.len();
 
