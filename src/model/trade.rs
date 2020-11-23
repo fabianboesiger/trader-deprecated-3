@@ -39,7 +39,11 @@ impl Trades {
                         asset,
                     },
                     value: Value {
-                        value: Decimal::one(),
+                        value: if asset == MAIN_ASSET {
+                            Decimal::one()
+                        } else {
+                            Decimal::zero()
+                        },
                         market: Market {
                             base: asset,
                             quote: MAIN_ASSET,
@@ -255,8 +259,8 @@ impl Trades {
                     <thead>
                         <tr>
                             <th>Market</th>
-                            <th>Value</th>
                             <th>Position</th>
+                            <th>Value</th>
                             <th>Stop Loss</th>
                             <th>Take Profit</th>
                             <th>USDT</th>
@@ -313,8 +317,8 @@ impl Trades {
                     <td>{}</td>
                 </tr>"#,
                 asset,
-                rd(state.valued_quantity.value.value),
                 position,
+                rd(state.valued_quantity.value.value),
                 stop_loss,
                 take_profit,
                 rd(state.valued_quantity.get_value_quantity().quantity),

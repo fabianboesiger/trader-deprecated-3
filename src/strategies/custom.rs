@@ -38,7 +38,7 @@ impl Strategy<Indicators> for Custom {
         if let Some((
             now,
             value,
-            (_macd, _signal, _histogram),
+            (_macd, _signal, histogram),
             (upper, lower),
             rsi,
             atr
@@ -60,6 +60,8 @@ impl Strategy<Indicators> for Custom {
             if 
                 now - self.bb_breakthrough <= Duration::hours(3) &&
                 now - self.rsi_breakthrough <= Duration::hours(3) &&
+                histogram >= 0.0 &&
+                1.6 * atr / value >= 0.005 && // Is it actually worth the trade?
                 self.allowed_to_enter
             {
                 self.allowed_to_enter = false;
