@@ -86,6 +86,7 @@ impl Trades {
 
     
     fn apply_trade(&mut self, trade: Trade) {
+        println!("apply trade {:?}", trade);
         // Update states.
         if let Position::Short = trade.position {
             self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity -= trade.base;
