@@ -15,8 +15,6 @@ pub struct Trades {
     pool: PgPool,
     pairs: Vec<(Trade, Option<Trade>)>,
     states: HashMap<Asset, State>,
-    mean: f32,
-    interval: f32,
 }
 
 impl Trades {
@@ -55,8 +53,6 @@ impl Trades {
             pool,
             pairs: Vec::new(),
             states,
-            mean: 0.0,
-            interval: 0.0,
         }
     }
 
@@ -108,39 +104,6 @@ impl Trades {
         } else {
             self.pairs.push((trade, None));
         }
-
-        self.update_stats();
-    }
-
-    fn update_stats(&mut self) {
-        let p = 0.99;
-
-        let (wins, losses): (Vec<f32>, Vec<f32>) = self.pairs
-            .iter()
-            .filter(|(_, short)| short.is_some())
-            .map(|(long, short)| long.base.quantity - short.as_ref().unwrap().base.quantity)
-            .map(|diff| diff.to_f32().unwrap())
-            .partition(|diff| *diff >= 0.0);
-        
-        if wins.len() > 0 && losses.len() > 0 {
-            let win_ratio = wins.len() as f32 / (wins.len() + losses.len()) as f32;
-
-            let (win_mean, win_stdev) = Self::compute_mean_stdev(wins);
-            let (loss_mean, loss_stdev) = Self::compute_mean_stdev(losses);
-        
-            let mean = win_ratio * win_mean + (1.0 - win_ratio) * loss_mean;
-            /*
-            let win_p = (p - (1.0 - win_ratio)) / win_ratio;
-            let loss_p = (p - win_ratio) / (1.0 - win_ratio);
-            let win_z = z_table::reverse_lookup(win_p);
-            let loss_z = z_table::reverse_lookup(loss_p);
-            */
-            let win_cap = win_mean + 2.0 * win_stdev;
-            let loss_cap = loss_mean - 2.0 * loss_stdev;
-
-            self.mean = mean;
-            self.interval = (win_cap - loss_cap) / 2.0;
-        }
     }
 
     fn compute_mean_stdev(values: Vec<f32>) -> (f32, f32) {
@@ -190,8 +153,80 @@ impl Trades {
 
         let total = rd(self.total().quantity);
 
-        let exp = total * (1.0 + self.mean / total).powf(365.25) - total;
-        let exp_max = total * (1.0 + (self.mean + self.interval) / total).powf(365.25) - total;
+        // Average amount of trades per day.
+        let start = self.pairs
+            .iter()
+            .map(|(long, short)| {
+                let mut vec = vec![long];
+                if let Some(short) = short {
+                    vec.push(short);
+                }
+                vec
+            })
+            .flatten()
+            .map(|trade| trade.timestamp)
+            .min();
+        
+        let trades_per_day = if let Some(start) = start {
+            let duration = Utc::now() - start;
+            let days = duration.num_minutes() as f32 / 60.0 / 24.0;
+
+            let completed = self.pairs
+                .iter()
+                .filter(|(long, short)| short.is_some())
+                .count();
+
+            completed as f32 / days
+        } else {
+            0.0
+        };
+
+        // Profit stats.
+        let (wins, losses): (Vec<f32>, Vec<f32>) = self.pairs
+            .iter()
+            .filter(|(_, short)| short.is_some())
+            .map(|(long, short)| long.base.quantity - short.as_ref().unwrap().base.quantity)
+            .map(|diff| diff.to_f32().unwrap())
+            .partition(|diff| *diff >= 0.0);
+
+        let w = wins.len();
+        let l = losses.len();
+
+        let (win_mean, win_stdev) = if wins.len() > 0 {
+            Self::compute_mean_stdev(wins)
+        } else {
+            (0.0, 0.0)
+        };
+
+        let (loss_mean, loss_stdev) = if losses.len() > 0 {
+            Self::compute_mean_stdev(losses)
+        } else {
+            (0.0, 0.0)
+        };
+        
+        let (mean, interval) = if w + l > 0 {
+            let win_ratio = w as f32 / (w + l) as f32;
+            let mean = win_ratio * win_mean + (1.0 - win_ratio) * loss_mean;
+
+            if w > 0 && l == 0 {
+                let win_cap = win_mean + 2.0 * win_stdev;
+                (mean, win_cap - mean)
+            } else
+            if l > 0 && w == 0  {
+                let loss_cap = loss_mean - 2.0 * loss_stdev;
+                (mean, mean - loss_cap)
+            } else {
+                let win_cap = win_mean + 2.0 * win_stdev;
+                let loss_cap = loss_mean - 2.0 * loss_stdev;
+                (mean, (win_cap - mean).max(mean - loss_cap))
+            }
+        } else {
+            (0.0, 0.0)
+        };
+
+
+        let exp = total * (1.0 + mean / total).powf(365.25) - total;
+        let exp_max = total * (1.0 + (mean + interval) / total).powf(365.25) - total;
         let exp_dev = exp_max - exp;
 
         let mut string = format!(r#"
@@ -223,10 +258,10 @@ impl Trades {
                     </thead>
                     <tbody>"#,
             r(total),
-            r(self.mean),
-            r(self.interval),
-            r(self.mean / total * 100.0),
-            r(self.interval / total * 100.0),
+            r(mean),
+            r(interval),
+            r(mean / total * 100.0),
+            r(interval / total * 100.0),
             r(exp),
             r(exp_dev),
         );
