@@ -275,9 +275,9 @@ impl Trades {
             .iter()
             .collect::<Vec<(&Asset, &State)>>();
 
-        states.sort_by(|(a1, s1), (a2, s2)| 
-            s1.valued_quantity.get_value_quantity().quantity
-                .cmp(&s2.valued_quantity.get_value_quantity().quantity)
+        states.sort_by(|(_, s1), (_, s2)| 
+            s2.valued_quantity.get_value_quantity().quantity
+                .cmp(&s1.valued_quantity.get_value_quantity().quantity)
         );
 
         for (asset, state) in states 
