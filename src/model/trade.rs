@@ -189,6 +189,8 @@ impl Trades {
             .map(|diff| diff.to_f32().unwrap())
             .partition(|diff| *diff >= 0.0);
 
+        println!("wins {:?}\nlosses {:?}", wins, losses);
+
         let w = wins.len();
         let l = losses.len();
 
@@ -198,7 +200,6 @@ impl Trades {
             (0.0, 0.0)
         };
 
-        println!("win {} {}", win_mean, win_stdev);
 
         let (loss_mean, loss_stdev) = if losses.len() > 0 {
             Self::compute_mean_stdev(losses)
@@ -206,7 +207,6 @@ impl Trades {
             (0.0, 0.0)
         };
 
-        println!("win {} {}", loss_mean, loss_stdev);
         
         let (mean, interval) = if w + l > 0 {
             let win_ratio = w as f32 / (w + l) as f32;
