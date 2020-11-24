@@ -260,9 +260,9 @@ impl Trades {
                         <tr>
                             <th>Market</th>
                             <th>Position</th>
-                            <th>Value</th>
                             <th>Stop Loss</th>
                             <th>Take Profit</th>
+                            <th>Value</th>
                             <th>USDT</th>
                         </tr>
                     </thead>
@@ -318,9 +318,9 @@ impl Trades {
                 </tr>"#,
                 asset,
                 position,
-                rd(state.valued_quantity.value.value),
                 stop_loss,
                 take_profit,
+                rd(state.valued_quantity.value.value),
                 rd(state.valued_quantity.get_value_quantity().quantity),
             ).as_str();
         }
