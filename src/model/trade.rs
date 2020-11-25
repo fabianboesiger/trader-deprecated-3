@@ -297,6 +297,7 @@ impl Trades {
             let (position, stop_loss, take_profit) = if let Position::Long {
                 stop_loss,
                 take_profit,
+                ..
             } = state.position {
                 (
                     String::from("LONG"),
@@ -383,6 +384,7 @@ impl From<Trade> for DbTrade {
         let (is_long, take_profit, stop_loss) = if let Position::Long {
             take_profit,
             stop_loss,
+            ..
         } = trade.position {
             (true, take_profit, stop_loss)
         } else {

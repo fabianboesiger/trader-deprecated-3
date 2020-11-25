@@ -6,6 +6,7 @@ pub enum Action {
     Enter {
         stop_loss: Option<Decimal>,
         take_profit: Option<Decimal>,
+        stake: Decimal,
     },
     Exit,
     Hold,

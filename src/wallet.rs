@@ -252,9 +252,10 @@ impl<B: Backend> Wallet<B> {
                 Action::Enter {
                     stop_loss,
                     take_profit,
+                    stake,
                 } => {
                     if let Position::Short = self.trades.get_position(&base) {
-                        let quantity = sum * Decimal::new(2, 1);
+                        let quantity = sum * stake;
                         if quantity <= self.trades.get_quantity(&quote) {
                             let buy = quantity / value * (Decimal::one() - Decimal::from_f64(FEE).unwrap());
                             let sell = quantity;
