@@ -1,12 +1,12 @@
 use super::Strategy;
 use crate::{
     indicators::{
-        series::{Macd, Value},
-        Atr, BollingerBands, Current, Indicator, Rsi, Timestamp
+        series::Value,
+        Atr, BollingerBands, Current, Indicator, Rsi
     },
     model::Action,
 };
-use chrono::{DateTime, Utc, NaiveDateTime, Duration};
+use chrono::{DateTime, Utc, NaiveDateTime};
 use rust_decimal::prelude::*;
 
 type Indicators = (

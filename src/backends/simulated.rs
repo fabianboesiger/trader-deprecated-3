@@ -1,6 +1,5 @@
 use super::{Exchange, Backend};
 use crate::{
-    loggers::Log,
     model::{Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET},
 };
 use async_trait::async_trait;

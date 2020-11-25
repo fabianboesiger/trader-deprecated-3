@@ -1,4 +1,4 @@
-use super::{Log, Logger};
+use super::Logger;
 use async_trait::async_trait;
 use futures::StreamExt;
 use std::{

@@ -1,6 +1,5 @@
-use super::{series::Series, Indicator};
+use super::Indicator;
 use crate::model::Candlestick;
-use num_traits::cast::ToPrimitive;
 use chrono::{DateTime, Utc};
 
 #[derive(Clone)]
@@ -13,7 +12,7 @@ impl Indicator for Timestamp {
         Timestamp
     }
 
-    fn compute(&mut self, candlestick: &Candlestick, recover: bool) -> Option<Self::Analysis> {
+    fn compute(&mut self, candlestick: &Candlestick, _recover: bool) -> Option<Self::Analysis> {
         Some(candlestick.close_time)
     }
 }

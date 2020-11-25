@@ -2,7 +2,7 @@ mod simulated;
 
 pub use simulated::Simulated;
 
-use crate::{model::Quantity, loggers::Log, model::Order};
+use crate::{model::Quantity, model::Order};
 use async_trait::async_trait;
 use openlimits::binance::Binance;
 use tokio::sync::mpsc::{Receiver, Sender};

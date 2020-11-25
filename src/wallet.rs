@@ -2,7 +2,6 @@ use crate::model::{Trades, Trade, Asset, Market, Order, Quantity, Value, ValuedQ
 use crate::backends::Backend;
 use std::collections::HashMap;
 use crate::{
-    loggers::Log,
     backends::Exchange
 };
 use async_trait::async_trait;
@@ -12,8 +11,6 @@ use tokio::sync::mpsc::{Receiver, UnboundedSender};
 use sqlx::PgPool;
 use tokio::sync::mpsc::channel;
 use tokio::stream::StreamExt;
-use num_traits::cast::ToPrimitive;
-use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 const FEE: f64 = 0.001;

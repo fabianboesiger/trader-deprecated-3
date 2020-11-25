@@ -1,7 +1,5 @@
-mod log;
 mod web;
 
-pub use log::Log;
 pub use web::Web;
 
 use async_trait::async_trait;

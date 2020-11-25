@@ -213,24 +213,24 @@ impl Trades {
         };
 
         
-        let (mean, interval) = if w + l > 0 {
+        let (win_ratio, mean, interval) = if w + l > 0 {
             let win_ratio = w as f32 / (w + l) as f32;
             let mean = win_ratio * win_mean + (1.0 - win_ratio) * loss_mean;
 
             if w > 0 && l == 0 {
                 let win_cap = win_mean + Z * win_stdev;
-                (mean, win_cap - mean)
+                (win_ratio, mean, win_cap - mean)
             } else
             if l > 0 && w == 0  {
                 let loss_cap = loss_mean - Z * loss_stdev;
-                (mean, mean - loss_cap)
+                (win_ratio, mean, mean - loss_cap)
             } else {
                 let win_cap = win_mean + Z * win_stdev;
                 let loss_cap = loss_mean - Z * loss_stdev;
-                (mean, (win_cap - mean).max(mean - loss_cap))
+                (win_ratio, mean, (win_cap - mean).max(mean - loss_cap))
             }
         } else {
-            (0.0, 0.0)
+            (0.5, 0.0, 0.0)
         };
 
         let (mean, interval) = (mean * trades_per_day, interval);
@@ -244,10 +244,14 @@ impl Trades {
             <section>
                 <h2>Overview</h2>
                 <table>
-                    <tr><th>Equity</th><td><span id="equity">{}</span> USDT</td></tr>
-                    <tr><th>Estimated Daily Profit</th><td><span id="profit">{} ± {}</span> USDT/day <sup>1</sup></td></tr>
-                    <tr><th>Daily Profit Percentage</th><td><span id="percentage">{} ± {}</span> %/day <sup>1</sup></td></tr>
-                    <tr><th>Average Trades per Day</th><td><span id="trades">{}</span></td></tr>
+                    <tr><th>Equity</th><td>{} USDT</td></tr>
+                    <tr><th>Estimated Daily Profit</th><td>{} ± {} USDT/day <sup>1</sup></td></tr>
+                    <tr><th>Daily Profit Percentage</th><td>{} ± {} %/day <sup>1</sup></td></tr>
+                    <tr><th>Online Since</th><td>{}</td></tr>
+                    <tr><th>Average Trades per Day</th><td>{}</td></tr>
+                    <tr><th>Win Ratio</th><td>{} %</td></tr>
+                    <tr><th>Average Profit per Trade</th><td>{} ± {} % <sup>1</sup></td></tr>
+                    <tr><th>Average Loss per Trade</th><td>{} ± {} % <sup>1</sup></td></tr>
                 </table>
                 <p>
                     <sup>1</sup> Assuming normal distribution of profits, 99% percentile.<br/>
@@ -272,7 +276,17 @@ impl Trades {
             r(interval * 0.2 * total),
             r(mean * 0.2 * 100.0),
             r(interval * 0.2 * 100.0),
+            if let Some(start) = start {
+                start.format("%d.%m.%y").to_string()
+            } else {
+                String::new()
+            },
             r(trades_per_day),
+            r(win_ratio * 100.0),
+            r(win_mean * 100.0),
+            r(win_stdev * Z * 100.0),
+            r(loss_mean * 100.0),
+            r(loss_stdev * Z * 100.0),
         );
 
         let mut states = self.states
@@ -285,14 +299,12 @@ impl Trades {
         );
 
         for (asset, state) in states 
-            /*
             .iter()
             .filter(|(_, state)| if let Position::Short = state.position {
                 false
             } else {
                 true
             })
-            */
         {
             let (position, stop_loss, take_profit) = if let Position::Long {
                 stop_loss,
