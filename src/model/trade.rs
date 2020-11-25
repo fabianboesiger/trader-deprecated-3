@@ -263,7 +263,6 @@ impl Trades {
                     <thead>
                         <tr>
                             <th>Market</th>
-                            <th>Position</th>
                             <th>Stop Loss</th>
                             <th>Take Profit</th>
                             <th>Value</th>
@@ -327,10 +326,8 @@ impl Trades {
                     <td>{}</td>
                     <td>{}</td>
                     <td>{}</td>
-                    <td>{}</td>
                 </tr>"#,
                 asset,
-                position,
                 stop_loss,
                 take_profit,
                 rd(state.valued_quantity.value.value),

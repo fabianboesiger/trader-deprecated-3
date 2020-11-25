@@ -59,13 +59,13 @@ impl Strategy<Indicators> for Custom {
                 value < lower &&
                 value < lower &&
                 //histogram >= 0.0 &&
-                1.5 * atr / value >= 0.005 && // Is it actually worth the trade?
+                1.6 * atr / value >= 0.005 && // Is it actually worth the trade?
                 self.allowed_to_enter
             {
                 self.allowed_to_enter = false;
                 return Action::Enter {
-                    take_profit: Some(Decimal::from_f64(value + 1.5 * atr).unwrap()),
-                    stop_loss: Some(Decimal::from_f64(value - 1.5 * atr).unwrap()),
+                    take_profit: Some(Decimal::from_f64(value + 1.6 * atr).unwrap()),
+                    stop_loss: Some(Decimal::from_f64(value - 1.6 * atr).unwrap()),
                     stake: Decimal::new(2, 1),
                 };
             }
