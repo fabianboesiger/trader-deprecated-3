@@ -174,7 +174,7 @@ impl Trades {
             .map(|trade| trade.timestamp)
             .min();
         
-        let trades_per_day = if let Some(start) = start {
+        let (trades_per_day, days) = if let Some(start) = start {
             let duration = Utc::now() - start;
             let days = duration.num_minutes() as f32 / 60.0 / 24.0;
 
@@ -183,9 +183,9 @@ impl Trades {
                 .filter(|(_, short)| short.is_some())
                 .count();
 
-            completed as f32 / days
+            (completed as f32 / days, days)
         } else {
-            0.0
+            (0.0, 0.0)
         };
 
         // Profit stats.
@@ -247,7 +247,7 @@ impl Trades {
                     <tr><th>Equity</th><td>{} USDT</td></tr>
                     <tr><th>Estimated Daily Profit</th><td>{} ± {} USDT/day <sup>1</sup></td></tr>
                     <tr><th>Daily Profit Percentage</th><td>{} ± {} %/day <sup>1</sup></td></tr>
-                    <tr><th>Online Since</th><td>{}</td></tr>
+                    <tr><th>Online Since</th><td>{} days</td></tr>
                     <tr><th>Average Trades per Day</th><td>{}</td></tr>
                     <tr><th>Win Ratio</th><td>{} %</td></tr>
                     <tr><th>Average Profit per Trade</th><td>{} ± {} % <sup>1</sup></td></tr>
@@ -275,11 +275,7 @@ impl Trades {
             r(interval * 0.2 * total),
             r(mean * 0.2 * 100.0),
             r(interval * 0.2 * 100.0),
-            if let Some(start) = start {
-                start.format("%d.%m.%y").to_string()
-            } else {
-                String::new()
-            },
+            r(days),
             r(trades_per_day),
             r(win_ratio * 100.0),
             r(win_mean * 100.0),
