@@ -1,7 +1,7 @@
 use std::{error, fmt};
 
 #[derive(Debug)]
-pub enum Error {}
+pub enum Error { }
 
 impl error::Error for Error {}
 

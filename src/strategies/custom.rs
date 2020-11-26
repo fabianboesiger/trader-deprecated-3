@@ -19,16 +19,12 @@ type Indicators = (
 #[derive(Clone)]
 pub struct Custom {
     allowed_to_enter: bool,
-    rsi_breakthrough: DateTime<Utc>,
-    bb_breakthrough: DateTime<Utc>,
 }
 
 impl Strategy<Indicators> for Custom {
     fn new() -> Self {
         Self {
             allowed_to_enter: false,
-            rsi_breakthrough: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc),
-            bb_breakthrough: DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc),
         }
     }
 
@@ -44,20 +40,10 @@ impl Strategy<Indicators> for Custom {
                 self.allowed_to_enter = true;
                 return Action::Exit;
             }
-            /*
-            if value < lower {
-                self.bb_breakthrough = now;
-            }
-
-            if value < lower {
-                self.rsi_breakthrough = now;
-            }
-            */
+           
             if 
-                //now - self.bb_breakthrough <= Duration::hours(3) &&
-                //now - self.rsi_breakthrough <= Duration::hours(3) &&
                 value < lower &&
-                value < lower &&
+                rsi < 30.0 &&
                 //histogram >= 0.0 &&
                 1.6 * atr / value >= 0.005 && // Is it actually worth the trade?
                 self.allowed_to_enter
