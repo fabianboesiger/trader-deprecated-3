@@ -42,7 +42,7 @@ impl Strategy<Indicators> for Custom {
             now
         )) = analysis {
            
-            if rsi > 70.0 {
+            if rsi > 70.0 || value > upper {
                 self.allowed_to_enter = true;
                 return Action::Exit;
             }
@@ -55,8 +55,14 @@ impl Strategy<Indicators> for Custom {
                 //rsi <= 50.0 &&
                 //value <= lower &&
                 //value < lower &&
-                rsi >= 30.0 &&
-                now - self.rsi_breakthrough <= Duration::hours(2) &&
+                ((
+                    rsi >= 30.0 &&
+                    now - self.rsi_breakthrough <= Duration::hours(2)
+                ) || (
+                    rsi >= 40.0 &&
+                    rsi <= 60.0 &&
+                    value < lower
+                )) &&
                 //histogram >= 0.0 &&
                 1.6 * atr / value >= 0.005 && // Is it actually worth the trade?
                 self.allowed_to_enter
