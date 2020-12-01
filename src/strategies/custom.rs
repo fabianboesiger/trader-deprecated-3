@@ -59,8 +59,8 @@ impl Strategy<Indicators> for Custom {
                     rsi >= 30.0 &&
                     now - self.rsi_breakthrough <= Duration::hours(2)
                 ) || (
-                    rsi >= 40.0 &&
-                    rsi <= 60.0 &&
+                    rsi >= 35.0 &&
+                    rsi <= 65.0 &&
                     value < lower
                 )) &&
                 //histogram >= 0.0 &&
