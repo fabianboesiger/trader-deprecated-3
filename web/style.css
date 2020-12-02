@@ -5,6 +5,7 @@
 html {
     color: var(--solid-color);
     font-size: 12px;
+    text-align: center;
 }
 
 body {
