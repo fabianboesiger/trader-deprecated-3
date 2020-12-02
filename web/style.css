@@ -31,3 +31,6 @@ table {
     font-family: monospace;
 }
 
+ul {
+    text-align: left;
+}
