@@ -126,7 +126,7 @@ where
                 Action::Hold => None,
             };
 
-            
+
             */
             if candlestick.live {
                 sender
@@ -150,12 +150,7 @@ where
         }
     }
 
-    pub async fn run(
-        mut self,
-        exchange: &Binance,
-        market: Market,
-        mut sender: Sender<Order>,
-    ) {
+    pub async fn run(mut self, exchange: &Binance, market: Market, mut sender: Sender<Order>) {
         // Get historical data using REST API.
         let params = KlineParams {
             symbol: format!("{}{}", market.base, market.quote),
@@ -177,13 +172,8 @@ where
                 .collect::<Vec<Candlestick>>(),
         );
 
-        self.consume_candlesticks(
-            historical_candlesticks,
-            exchange,
-            market,
-            &mut sender,
-        )
-        .await;
+        self.consume_candlesticks(historical_candlesticks, exchange, market, &mut sender)
+            .await;
 
         // Candlestick subscription.
         let sub = Subscription::Candlestick(
@@ -210,13 +200,8 @@ where
                 }
             });
 
-            self.consume_candlesticks(
-                live_candlesticks,
-                exchange,
-                market,
-                &mut sender,
-            )
-            .await;
+            self.consume_candlesticks(live_candlesticks, exchange, market, &mut sender)
+                .await;
             println!("attempting to reconnect {}", market);
         }
     }

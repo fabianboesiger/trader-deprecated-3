@@ -5,9 +5,9 @@ mod interval;
 mod market;
 mod order;
 mod quantity;
+mod trade;
 mod value;
 mod valued_quantity;
-mod trade;
 
 pub use action::*;
 pub use asset::*;
@@ -16,6 +16,6 @@ pub use interval::*;
 pub use market::*;
 pub use order::*;
 pub use quantity::*;
+pub use trade::*;
 pub use value::*;
 pub use valued_quantity::*;
-pub use trade::*;

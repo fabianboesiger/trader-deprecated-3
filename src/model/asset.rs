@@ -20,7 +20,7 @@ macro_rules! gen_assets {
                 })
             }
         }
-        
+
         impl<S: AsRef<str>> From<S> for Asset {
             fn from(string: S) -> Asset {
                 match string.as_ref() {
@@ -124,4 +124,6 @@ gen_assets! {
     FET,
     ICX,
     MKR,
+    XRPUP,
+    XRPDOWN,
 }

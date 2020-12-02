@@ -1,6 +1,6 @@
 use super::{Quantity, Value};
-use std::fmt;
 use serde::Serialize;
+use std::fmt;
 
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct ValuedQuantity {

@@ -1,8 +1,11 @@
 use crate::{
-    wallet::Wallet,
-    model::{Asset, Interval, Market, MAIN_ASSET},
     backends::Backend,
-    indicators::Indicator, loggers::Logger, strategies::Strategy, trader::Trader,
+    indicators::Indicator,
+    loggers::Logger,
+    model::{Asset, Interval, Market, MAIN_ASSET},
+    strategies::Strategy,
+    trader::Trader,
+    wallet::Wallet,
 };
 use openlimits::binance::Binance;
 use tokio::sync::mpsc::{channel, unbounded_channel};
@@ -47,7 +50,7 @@ where
             .collect::<Vec<Asset>>();
 
         for asset in tradable {
-            let trader = Trader::new(S::new(), Interval::ThirtyMinutes);
+            let trader = Trader::new(S::new(), Interval::FivteenMinutes);
             let sender = order_sender.clone();
             let market = Market {
                 base: asset,

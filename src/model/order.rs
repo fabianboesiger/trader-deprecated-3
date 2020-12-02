@@ -1,4 +1,4 @@
-use super::{Value, Action};
+use super::{Action, Value};
 use chrono::{DateTime, Utc};
 
 #[derive(Debug)]

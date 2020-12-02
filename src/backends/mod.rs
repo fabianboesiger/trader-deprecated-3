@@ -2,7 +2,7 @@ mod simulated;
 
 pub use simulated::Simulated;
 
-use crate::{model::Quantity, model::Order};
+use crate::{model::Order, model::Quantity};
 use async_trait::async_trait;
 use openlimits::binance::Binance;
 use tokio::sync::mpsc::{Receiver, Sender};
@@ -13,7 +13,7 @@ pub struct Exchange {
 }
 
 #[async_trait]
-pub trait Backend: Send +'static {
+pub trait Backend: Send + 'static {
     fn new() -> Self;
     async fn buy(self, exchange: &Binance);
     async fn sell(self, exchange: &Binance);

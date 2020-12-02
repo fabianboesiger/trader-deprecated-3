@@ -1,12 +1,9 @@
 use super::Logger;
 use async_trait::async_trait;
 use futures::StreamExt;
-use std::{
-    net::SocketAddr,
-    sync::Arc,
-};
+use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::{
-    mpsc::{channel, UnboundedReceiver, Receiver, Sender},
+    mpsc::{channel, Receiver, Sender, UnboundedReceiver},
     Mutex, RwLock,
 };
 use warp::{
@@ -33,8 +30,8 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Web<A> {
 
 #[async_trait]
 impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
-    async fn run(self, mut receiver: UnboundedReceiver<String>) { 
-        let address = self.address;      
+    async fn run(self, mut receiver: UnboundedReceiver<String>) {
+        let address = self.address;
         let senders = Arc::new(Mutex::new(Vec::new()));
 
         let senders_clone = senders.clone();
@@ -45,11 +42,9 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
             .and(warp::ws())
             .and(warp::any().map(move || senders_clone.clone()))
             .and(warp::any().map(move || cache_clone.clone()))
-            .map(
-                |ws: warp::ws::Ws, senders: Senders, cache: Cache| {
-                    ws.on_upgrade(move |ws| connect(ws, senders, cache))
-                },
-            );
+            .map(|ws: warp::ws::Ws, senders: Senders, cache: Cache| {
+                ws.on_upgrade(move |ws| connect(ws, senders, cache))
+            });
 
         let routes = warp::fs::dir("web").or(socket);
 
@@ -70,7 +65,7 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
                             }
                         }
                     }
-                    
+
 
                     *cache.write().await = log;
                 }
@@ -81,7 +76,6 @@ impl<A: Into<SocketAddr> + Send + Sync + 'static> Logger for Web<A> {
 }
 
 async fn connect(ws: WebSocket, senders: Senders, cache: Cache) {
-
     let (ws_sender, _ws_receiver) = ws.split();
     let (mut sender, receiver) = channel(16);
 
@@ -106,7 +100,10 @@ async fn connect(ws: WebSocket, senders: Senders, cache: Cache) {
     }
     */
 
-    sender.send(Ok(Message::text(&*cache.read().await))).await.ok();
+    sender
+        .send(Ok(Message::text(&*cache.read().await)))
+        .await
+        .ok();
 
     senders.lock().await.push(sender);
 }

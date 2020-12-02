@@ -1,13 +1,11 @@
-use super::{Exchange, Backend};
-use crate::{
-    model::{Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET},
-};
+use super::{Backend, Exchange};
+use crate::model::{Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET};
 use async_trait::async_trait;
 use openlimits::binance::Binance;
 use rust_decimal::prelude::*;
+use sqlx::PgPool;
 use std::{collections::HashMap, fmt};
 use tokio::sync::mpsc::{Receiver, Sender};
-use sqlx::PgPool;
 
 /*
 pub struct Simulated {
@@ -64,7 +62,7 @@ impl Simulated {
                     quantity: Quantity {
                         quantity: if let Some(quantity) = db_assets.get(&asset) {
                             *quantity
-                        } else 
+                        } else
                         if asset == MAIN_ASSET {
                             Decimal::from_f32(1000.0).unwrap()
                         } else {
@@ -198,9 +196,7 @@ impl fmt::Display for Simulated {
 }
 */
 
-pub struct Simulated {
-
-}
+pub struct Simulated {}
 
 #[async_trait]
 impl Backend for Simulated {
@@ -208,11 +204,7 @@ impl Backend for Simulated {
         Simulated {}
     }
 
-    async fn buy(self, exchange: &Binance) {
+    async fn buy(self, exchange: &Binance) {}
 
-    }
-
-    async fn sell(self, exchange: &Binance) {
-
-    }
+    async fn sell(self, exchange: &Binance) {}
 }

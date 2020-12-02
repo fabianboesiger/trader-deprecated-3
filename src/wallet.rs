@@ -1,23 +1,23 @@
-use crate::model::{Trades, Trade, Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET, Action};
 use crate::backends::Backend;
-use std::collections::HashMap;
-use crate::{
-    backends::Exchange
+use crate::backends::Exchange;
+use crate::model::{
+    Action, Asset, Market, Order, Quantity, Trade, Trades, Value, ValuedQuantity, MAIN_ASSET,
 };
 use async_trait::async_trait;
 use openlimits::binance::Binance;
 use rust_decimal::prelude::*;
-use tokio::sync::mpsc::{Receiver, UnboundedSender};
-use sqlx::PgPool;
-use tokio::sync::mpsc::channel;
-use tokio::stream::StreamExt;
 use serde::Serialize;
+use sqlx::PgPool;
+use std::collections::HashMap;
+use tokio::stream::StreamExt;
+use tokio::sync::mpsc::channel;
+use tokio::sync::mpsc::{Receiver, UnboundedSender};
 
 const FEE: f64 = 0.001;
 
 pub enum Message {
     Order(Order),
-    Exchange(Exchange)
+    Exchange(Exchange),
 }
 
 #[derive(Copy, Clone, Debug, Serialize)]
@@ -44,10 +44,7 @@ pub struct Wallet<B: Backend> {
 }
 
 impl<B: Backend> Wallet<B> {
-
     pub async fn new(sender: UnboundedSender<String>) -> Self {
-
-        
         /*
         let assets: HashMap<Asset, State> = sqlx::query!("
                 WITH
@@ -129,7 +126,7 @@ impl<B: Backend> Wallet<B> {
                                 quantity: if let Some(quantity) = row.quantity {
                                     //Decimal::from_f64(row.quantity.unwrap()).unwrap()
                                     *quantity
-                                } else 
+                                } else
                                 if asset == MAIN_ASSET {
                                     Decimal::from_f64(1000.0).unwrap()
                                 } else {
@@ -149,7 +146,7 @@ impl<B: Backend> Wallet<B> {
                 )
             })
             .collect();
-        
+
         let mut default_assets = HashMap::new();
         for asset in Asset::all() {
             assets.insert(asset, State {
@@ -173,7 +170,7 @@ impl<B: Backend> Wallet<B> {
                 },
             });
         }
-        
+
         for (k, v) in default_assets.drain() {
             if !assets.contains_key(&k) {
                 assets.insert(k, v);
@@ -198,18 +195,14 @@ impl<B: Backend> Wallet<B> {
         self.sender.send(Log::State(*self.assets.get_mut(&trade.base.asset).unwrap())).unwrap();
     }
     */
-    
 
-    pub async fn run(
-        mut self,
-        exchange: &'static Binance,
-        mut receiver: Receiver<Order>,
-    ) {
+    pub async fn run(mut self, exchange: &'static Binance, mut receiver: Receiver<Order>) {
         while let Some(Order {
             mut action,
             value,
             timestamp,
-        }) = receiver.next().await {
+        }) = receiver.next().await
+        {
             assert_eq!(value.market.quote, MAIN_ASSET);
 
             let base = value.market.base;
@@ -217,7 +210,6 @@ impl<B: Backend> Wallet<B> {
 
             self.trades.update_value(value);
             self.sender.send(self.trades.render()).unwrap();
-
 
             let sum = self.trades.total();
 
@@ -254,7 +246,8 @@ impl<B: Backend> Wallet<B> {
                     if let Position::Short = self.trades.get_position(&base) {
                         let quantity = sum * stake;
                         if quantity <= self.trades.get_quantity(&quote) {
-                            let buy = quantity / value * (Decimal::one() - Decimal::from_f64(FEE).unwrap());
+                            let buy = quantity / value
+                                * (Decimal::one() - Decimal::from_f64(FEE).unwrap());
                             let sell = quantity;
                             /*
                             sender
@@ -266,21 +259,22 @@ impl<B: Backend> Wallet<B> {
                                 .await
                                 .unwrap();
                             */
-                            
+
                             let position = Position::Long {
                                 stop_loss,
                                 take_profit,
                             };
 
-                            self.trades.insert(Trade {
-                                base: buy,
-                                quote: sell,
-                                value,
-                                timestamp,
-                                position,
-                            }).await;
+                            self.trades
+                                .insert(Trade {
+                                    base: buy,
+                                    quote: sell,
+                                    value,
+                                    timestamp,
+                                    position,
+                                })
+                                .await;
                             self.sender.send(self.trades.render()).unwrap();
-
                         }
                         /*
                         let sender_clone = exchange_sender.clone();
@@ -289,13 +283,14 @@ impl<B: Backend> Wallet<B> {
                         });
                         */
                     }
-                    
-                },
+                }
                 Action::Exit => {
-                    if let Position::Long {..} = self.trades.get_position(&base) {
+                    if let Position::Long { .. } = self.trades.get_position(&base) {
                         let quantity = self.trades.get_quantity(&base);
                         if !quantity.is_zero() {
-                            let buy = quantity * value * (Decimal::one() - Decimal::from_f64(FEE).unwrap());
+                            let buy = quantity
+                                * value
+                                * (Decimal::one() - Decimal::from_f64(FEE).unwrap());
                             let sell = quantity;
                             /*
                             sender
@@ -310,15 +305,16 @@ impl<B: Backend> Wallet<B> {
 
                             let position = Position::Short;
 
-                            self.trades.insert(Trade {
-                                base: sell,
-                                quote: buy,
-                                value,
-                                timestamp,
-                                position,
-                            }).await;
+                            self.trades
+                                .insert(Trade {
+                                    base: sell,
+                                    quote: buy,
+                                    value,
+                                    timestamp,
+                                    position,
+                                })
+                                .await;
                             self.sender.send(self.trades.render()).unwrap();
-
                         }
                         /*
                         let sender_clone = exchange_sender.clone();
@@ -326,9 +322,8 @@ impl<B: Backend> Wallet<B> {
                             B::new().sell(&exchange, sender_clone).await;
                         });
                         */
-                        
                     }
-                },
+                }
                 Action::Hold => {}
             }
         }

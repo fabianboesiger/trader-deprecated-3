@@ -1,12 +1,10 @@
-use crate::model::{Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET, Action};
-use crate::wallet::{Position, States, State};
-use crate::{
-    backends::Exchange
-};
-use rust_decimal::prelude::*;
-use sqlx::PgPool;
+use crate::backends::Exchange;
+use crate::model::{Action, Asset, Market, Order, Quantity, Value, ValuedQuantity, MAIN_ASSET};
+use crate::wallet::{Position, State, States};
 use chrono::{DateTime, Utc};
+use rust_decimal::prelude::*;
 use serde::Serialize;
+use sqlx::PgPool;
 use std::collections::HashMap;
 
 const FEE: f64 = 0.001;
@@ -27,30 +25,33 @@ impl Trades {
 
         let mut states = HashMap::new();
         for asset in Asset::all() {
-            states.insert(asset, State {
-                position: Position::Short,
-                valued_quantity: ValuedQuantity {
-                    quantity: Quantity {
-                        quantity: if asset == MAIN_ASSET {
-                            Decimal::from_f64(1000.0).unwrap()
-                        } else {
-                            Decimal::zero()
+            states.insert(
+                asset,
+                State {
+                    position: Position::Short,
+                    valued_quantity: ValuedQuantity {
+                        quantity: Quantity {
+                            quantity: if asset == MAIN_ASSET {
+                                Decimal::from_f64(1000.0).unwrap()
+                            } else {
+                                Decimal::zero()
+                            },
+                            asset,
                         },
-                        asset,
-                    },
-                    value: Value {
-                        value: if asset == MAIN_ASSET {
-                            Decimal::one()
-                        } else {
-                            Decimal::zero()
-                        },
-                        market: Market {
-                            base: asset,
-                            quote: MAIN_ASSET,
+                        value: Value {
+                            value: if asset == MAIN_ASSET {
+                                Decimal::one()
+                            } else {
+                                Decimal::zero()
+                            },
+                            market: Market {
+                                base: asset,
+                                quote: MAIN_ASSET,
+                            },
                         },
                     },
                 },
-            });
+            );
         }
 
         Trades {
@@ -61,48 +62,65 @@ impl Trades {
     }
 
     pub async fn fetch_all(&mut self) {
-        let trades: Vec<Trade> = sqlx::query_as!(DbTrade, r#"
+        let trades: Vec<Trade> = sqlx::query_as!(
+            DbTrade,
+            r#"
                 SELECT *
                 FROM trades
                 ORDER BY date_time ASC"#
-            )
-            .fetch_all(&self.pool)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(Trade::from)
-            .collect();
-        
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap()
+        .into_iter()
+        .map(Trade::from)
+        .collect();
+
         for trade in trades {
             self.apply_trade(trade);
         }
     }
-
 
     pub async fn insert(&mut self, trade: Trade) {
         trade.clone().insert(&self.pool).await;
         self.apply_trade(trade);
     }
 
-    
     fn apply_trade(&mut self, trade: Trade) {
         // Update states.
         if let Position::Short = trade.position {
-            self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity -= trade.base;
-            self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity += trade.quote;
+            self.states
+                .get_mut(&trade.base.asset)
+                .unwrap()
+                .valued_quantity
+                .quantity -= trade.base;
+            self.states
+                .get_mut(&trade.quote.asset)
+                .unwrap()
+                .valued_quantity
+                .quantity += trade.quote;
         } else {
-            self.states.get_mut(&trade.base.asset).unwrap().valued_quantity.quantity += trade.base;
-            self.states.get_mut(&trade.quote.asset).unwrap().valued_quantity.quantity -= trade.quote;
+            self.states
+                .get_mut(&trade.base.asset)
+                .unwrap()
+                .valued_quantity
+                .quantity += trade.base;
+            self.states
+                .get_mut(&trade.quote.asset)
+                .unwrap()
+                .valued_quantity
+                .quantity -= trade.quote;
         }
         self.states.get_mut(&trade.base.asset).unwrap().position = trade.position;
 
-        let i = self.pairs
+        let i = self
+            .pairs
             .iter()
             .enumerate()
             .filter(|(_, (long, short))| (*long).base.asset == trade.base.asset && short.is_none())
             .map(|(i, _)| i)
             .next();
-       
+
         if let Some(i) = i {
             self.pairs[i].1 = Some(trade);
         } else {
@@ -126,7 +144,11 @@ impl Trades {
 
     pub fn update_value(&mut self, value: Value) {
         // Update value of this asset.
-        self.states.get_mut(&value.market.base).unwrap().valued_quantity.value = value;
+        self.states
+            .get_mut(&value.market.base)
+            .unwrap()
+            .valued_quantity
+            .value = value;
         //self.sender.send(Log::Value(value)).unwrap();
     }
 
@@ -161,7 +183,8 @@ impl Trades {
         let total = rd(self.total().quantity);
 
         // Average amount of trades per day.
-        let start = self.pairs
+        let start = self
+            .pairs
             .iter()
             .map(|(long, short)| {
                 let mut vec = vec![long];
@@ -173,12 +196,13 @@ impl Trades {
             .flatten()
             .map(|trade| trade.timestamp)
             .min();
-        
+
         let (trades_per_day, days) = if let Some(start) = start {
             let duration = Utc::now() - start;
             let days = duration.num_minutes() as f32 / 60.0 / 24.0;
 
-            let completed = self.pairs
+            let completed = self
+                .pairs
                 .iter()
                 .filter(|(_, short)| short.is_some())
                 .count();
@@ -189,10 +213,13 @@ impl Trades {
         };
 
         // Profit stats.
-        let (wins, losses): (Vec<f32>, Vec<f32>) = self.pairs
+        let (wins, losses): (Vec<f32>, Vec<f32>) = self
+            .pairs
             .iter()
             .filter(|(_, short)| short.is_some())
-            .map(|(long, short)| (short.as_ref().unwrap().quote.quantity - long.quote.quantity) / long.quote.quantity)
+            .map(|(long, short)| {
+                (short.as_ref().unwrap().quote.quantity - long.quote.quantity) / long.quote.quantity
+            })
             .map(|diff| diff.to_f32().unwrap())
             .partition(|diff| *diff >= 0.0);
 
@@ -205,14 +232,12 @@ impl Trades {
             (0.0, 0.0)
         };
 
-
         let (loss_mean, loss_stdev) = if losses.len() > 0 {
             Self::compute_mean_stdev(losses)
         } else {
             (0.0, 0.0)
         };
 
-        
         let (win_ratio, mean, interval) = if w + l > 0 {
             let win_ratio = w as f32 / (w + l) as f32;
             let mean = win_ratio * win_mean + (1.0 - win_ratio) * loss_mean;
@@ -220,8 +245,7 @@ impl Trades {
             if w > 0 && l == 0 {
                 let win_cap = win_mean + Z * win_stdev;
                 (win_ratio, mean, win_cap - mean)
-            } else
-            if l > 0 && w == 0  {
+            } else if l > 0 && w == 0 {
                 let loss_cap = loss_mean - Z * loss_stdev;
                 (win_ratio, mean, mean - loss_cap)
             } else {
@@ -235,12 +259,12 @@ impl Trades {
 
         let (mean, interval) = (mean * trades_per_day, interval);
 
-
         //let exp = total * (1.0 + mean / total).powf(365.25) - total;
         //let exp_max = total * (1.0 + (mean + interval) / total).powf(365.25) - total;
         //let exp_dev = exp_max - exp;
 
-        let mut string = format!(r#"
+        let mut string = format!(
+            r#"
             <section>
                 <h2>Overview</h2>
                 <table>
@@ -271,10 +295,10 @@ impl Trades {
                     </thead>
                     <tbody>"#,
             r(total),
-            r(mean * 0.2 * total),
-            r(interval * 0.2 * total),
-            r(mean * 0.2 * 100.0),
-            r(interval * 0.2 * 100.0),
+            r(mean * 0.3 * total),
+            r(interval * 0.3 * total),
+            r(mean * 0.3 * 100.0),
+            r(interval * 0.3 * 100.0),
             r(days),
             r(trades_per_day),
             r(win_ratio * 100.0),
@@ -284,38 +308,39 @@ impl Trades {
             r(loss_stdev * Z * 100.0),
         );
 
-        let mut states = self.states
-            .iter()
-            .collect::<Vec<(&Asset, &State)>>();
+        let mut states = self.states.iter().collect::<Vec<(&Asset, &State)>>();
 
-        states.sort_by(|(_, s1), (_, s2)| 
-            s2.valued_quantity.get_value_quantity().quantity
+        states.sort_by(|(_, s1), (_, s2)| {
+            s2.valued_quantity
+                .get_value_quantity()
+                .quantity
                 .cmp(&s1.valued_quantity.get_value_quantity().quantity)
-        );
+        });
 
-        for (asset, state) in states 
-            .iter()
-            .filter(|(_, state)| if let Position::Short = state.position {
+        for (asset, state) in states.iter().filter(|(_, state)| {
+            if let Position::Short = state.position {
                 false
             } else {
                 true
-            })
-        {
+            }
+        }) {
             let (position, stop_loss, take_profit) = if let Position::Long {
                 stop_loss,
                 take_profit,
                 ..
-            } = state.position {
+            } = state.position
+            {
                 (
                     String::from("LONG"),
                     rd(stop_loss.unwrap()).to_string(),
-                    rd(take_profit.unwrap()).to_string()
+                    rd(take_profit.unwrap()).to_string(),
                 )
             } else {
                 (String::from("SHORT"), String::new(), String::new())
             };
 
-            string += format!(r#"    
+            string += format!(
+                r#"    
                 <tr>
                     <td>{}</td>
                     <td>{}</td>
@@ -328,15 +353,19 @@ impl Trades {
                 take_profit,
                 rd(state.valued_quantity.value.value),
                 rd(state.valued_quantity.get_value_quantity().quantity),
-            ).as_str();
+            )
+            .as_str();
         }
-        
-        string += format!(r#"
+
+        string += format!(
+            r#"
                     </tbody>
                 </table>
             </section>
-        "#).as_str();
-        
+        "#
+        )
+        .as_str();
+
         string
     }
 }
@@ -355,7 +384,8 @@ struct DbTrade {
 
 impl DbTrade {
     async fn insert(self, pool: &PgPool) {
-        sqlx::query!(r#"
+        sqlx::query!(
+            r#"
             INSERT INTO trades (
                 base_asset,
                 base_quantity,
@@ -390,7 +420,8 @@ impl From<Trade> for DbTrade {
             take_profit,
             stop_loss,
             ..
-        } = trade.position {
+        } = trade.position
+        {
             (true, take_profit, stop_loss)
         } else {
             (false, None, None)
@@ -450,7 +481,7 @@ impl From<DbTrade> for Trade {
                 }
             } else {
                 Position::Short
-            }
+            },
         }
     }
 }
