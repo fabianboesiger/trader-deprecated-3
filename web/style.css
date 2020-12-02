@@ -5,17 +5,12 @@
 html {
     color: var(--solid-color);
     font-size: 12px;
-    text-align: center;
 }
 
 body {
     margin: auto;
     padding: 8px;
     max-width: 512px;
-}
-
-a {
-    color: var(--solid-color);
 }
 
 td, th {
@@ -29,8 +24,4 @@ table {
     width: 100%;
     border-collapse: collapse;
     font-family: monospace;
-}
-
-ul {
-    text-align: left;
 }
